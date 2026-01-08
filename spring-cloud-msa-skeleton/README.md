@@ -1,4 +1,4 @@
-# Spring Cloud MSA Skeleton v2 (Boot 4.0.1 / Cloud 2025.1.0)
+# Spring Cloud MSA Skeleton
 
 ## 구성(포트)
 - mariadb (3306)
@@ -38,3 +38,7 @@ curl -s http://localhost:8080/user/api/v1/users/1 \
 ## 데모 계정
 - user / pass
 - admin / pass
+
+## 사용시 필요, 고려 작업
+- api-gateway SecurityConfig 설정
+- - SecurityFilterChain 상세 설정필요 (구축 / 셋팅을 위해 작성했다 제거했음)
