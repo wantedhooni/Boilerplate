@@ -27,7 +27,9 @@ subprojects {
     // 반드시 java 플러그인 또는 application/plugin이 적용된 이후에 설정되도록
     plugins.withType<JavaPlugin> {
 
+
         dependencies {
+
             // Lombok 공통 선언
             compileOnly("org.projectlombok:lombok:1.18.42")
             annotationProcessor("org.projectlombok:lombok:1.18.42")
