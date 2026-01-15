@@ -10,6 +10,7 @@ import ThemeToggle from './components/ThemeToggle'
 export default function App() {
   const auth = useAuth()
   const navigate = useNavigate()
+  const displayName = auth?.user?.name || auth?.user?.email || '사용자'
 
   function handleLogout() {
     auth.logout()
@@ -22,20 +23,20 @@ export default function App() {
         <h1>Trading Charts</h1>
         <nav className="nav-right">
           <Link to="/">Home</Link>
+          <Link to="/market">Market</Link>
           {!auth?.user ? (
             <>
               <Link to="/login">Login</Link>
               <Link to="/signup">Signup</Link>
-              <Link to="/market">Market</Link>
-              <ThemeToggle />
             </>
           ) : (
             <>
-              <span className="greeting">안녕하세요</span>
+              <span className="greeting">{displayName} 님, 안녕하세요 </span>
               <button onClick={handleLogout} className="logout">Logout</button>
-              <ThemeToggle />
             </>
           )}
+
+          <ThemeToggle />
         </nav>
       </header>
 

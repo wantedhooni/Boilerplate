@@ -8,12 +8,31 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const token = localStorage.getItem('access_token')
+    const cachedProfile = localStorage.getItem('user_profile')
+    if (cachedProfile) {
+      try {
+        setUser(JSON.parse(cachedProfile))
+        return
+      } catch (e) {
+        // ignore parse errors
+      }
+    }
     if (token) setUser({ authenticated: true })
   }, [])
 
   async function login(payload) {
     const res = await apiLogin(payload)
-    setUser({ authenticated: true })
+    const profile = {
+      authenticated: true,
+      name: res?.user?.name || res?.name || res?.userName || res?.username || payload?.name || payload?.email,
+      email: res?.user?.email || res?.email || payload?.email,
+    }
+    setUser(profile)
+    try {
+      localStorage.setItem('user_profile', JSON.stringify(profile))
+    } catch (e) {
+      // ignore storage issues
+    }
     return res
   }
 
@@ -25,6 +44,7 @@ export function AuthProvider({ children }) {
   function logout() {
     localStorage.removeItem('access_token')
     localStorage.removeItem('refresh_token')
+    localStorage.removeItem('user_profile')
     setUser(null)
   }
 

@@ -1,13 +1,18 @@
 import React, { useRef, useEffect } from 'react'
 import { createChart } from 'lightweight-charts'
 
-export default function CandleChart({ data, height = 420 }) {
+export default function CandleChart({ data, height = 420, onVisibleRangeChange }) {
   const ref = useRef()
   const chartRef = useRef()
   const seriesRef = useRef()
   const tooltipRef = useRef()
   const volumeRef = useRef()
   const maRef = useRef()
+  const rangeChangeRef = useRef(onVisibleRangeChange)
+
+  useEffect(() => {
+    rangeChangeRef.current = onVisibleRangeChange
+  }, [onVisibleRangeChange])
 
   useEffect(() => {
     if (!ref.current) return
@@ -94,12 +99,22 @@ export default function CandleChart({ data, height = 420 }) {
     }
 
     chart.subscribeCrosshairMove(handler)
+    const timeScale = chart.timeScale()
+    const handleRangeChange = range => {
+      if (rangeChangeRef.current) rangeChangeRef.current(range)
+    }
+    timeScale.subscribeVisibleTimeRangeChange(handleRangeChange)
 
     return () => {
       window.removeEventListener('resize', handleResize)
       // unsubscribe using the handler reference
       try {
         chart.unsubscribeCrosshairMove(handler)
+      } catch (e) {
+        // ignore if unsubscribe not supported
+      }
+      try {
+        timeScale.unsubscribeVisibleTimeRangeChange(handleRangeChange)
       } catch (e) {
         // ignore if unsubscribe not supported
       }

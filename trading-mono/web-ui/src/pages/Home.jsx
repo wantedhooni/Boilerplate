@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react'
+import React, { useMemo, useState, useEffect, useRef } from 'react'
 import { format } from 'date-fns'
 import CandleChart from '../components/CandleChart'
 import SymbolSearch from '../components/SymbolSearch'
@@ -14,6 +14,9 @@ export default function Home() {
   const [quote, setQuote] = useState(null)
   const [info, setInfo] = useState(null)
   const [loading, setLoading] = useState(false)
+  const isFetchingRef = useRef(false)
+  const earliestTimeRef = useRef(null)
+  const lastFetchRef = useRef(null)
 
   const toNumber = value => {
     if (value === null || value === undefined) return null
@@ -31,42 +34,59 @@ export default function Home() {
     return num.toLocaleString('en-US', { maximumFractionDigits: fractionDigits })
   }
 
-  const fetchHistorical = async () => {
-    setLoading(true)
+  const mergeSeriesData = (existing, incoming) => {
+    if (!existing.length) return incoming
+    if (!incoming.length) return existing
+    const map = new Map()
+    existing.forEach(item => map.set(item.time, item))
+    incoming.forEach(item => map.set(item.time, item))
+    return Array.from(map.values()).sort((a, b) => new Date(a.time) - new Date(b.time))
+  }
+
+  const fetchHistorical = async ({ startDate, endDate, mode = 'replace', trackLoading = true, targetSymbol } = {}) => {
+    if (!startDate || !endDate) return
+    if (isFetchingRef.current) return
+    isFetchingRef.current = true
+    if (trackLoading) setLoading(true)
     try {
-      const end = format(new Date(), 'yyyy-MM-dd')
-      const start = format(new Date(Date.now() - 1000 * 60 * 60 * 24 * 365), 'yyyy-MM-dd')
-      const resp = await getHistorical(symbol, start, end, '1d')
+      const start = format(startDate, 'yyyy-MM-dd')
+      const end = format(endDate, 'yyyy-MM-dd')
+      const resp = await getHistorical(targetSymbol || symbol, start, end, '1d')
       // convert to lightweight-charts format: { time, open, high, low, close }
       const prices = resp.prices.map(p => ({ time: p.date, open: p.open, high: p.high, low: p.low, close: p.close, volume: p.volume }))
-      setData(prices)
+      const sortedPrices = prices.sort((a, b) => new Date(a.time) - new Date(b.time))
+      setData(prev => (mode === 'replace' ? sortedPrices : mergeSeriesData(prev, sortedPrices)))
     } catch (e) {
       console.error(e)
-      setData([])
+      if (mode === 'replace') setData([])
     } finally {
-      setLoading(false)
+      if (trackLoading) setLoading(false)
+      isFetchingRef.current = false
     }
   }
 
-  const fetchQuote = async () => {
+  const fetchQuote = async (targetSymbol) => {
     try {
-      const q = await getQuote(symbol)
+      const q = await getQuote(targetSymbol || symbol)
       setQuote(q)
     } catch (e) {
       setQuote(null)
     }
 
     try {
-      const inf = await getInfo(symbol)
+      const inf = await getInfo(targetSymbol || symbol)
       setInfo(inf)
     } catch (e) {
       setInfo(null)
     }
   }
 
-  const onSearch = async () => {
-    await fetchQuote()
-    await fetchHistorical()
+  const onSearch = async (targetSymbol) => {
+    const endDate = new Date()
+    const startDate = new Date()
+    startDate.setDate(endDate.getDate() - 30)
+    await fetchQuote(targetSymbol)
+    await fetchHistorical({ startDate, endDate, mode: 'replace', trackLoading: true, targetSymbol })
   }
 
   useEffect(() => {
@@ -74,6 +94,41 @@ export default function Home() {
     onSearch()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  useEffect(() => {
+    if (data.length) {
+      earliestTimeRef.current = data[0].time
+    }
+  }, [data])
+
+  const toDate = value => {
+    if (!value) return null
+    if (typeof value === 'number') return new Date(value * 1000)
+    if (typeof value === 'string') return new Date(value)
+    if (typeof value === 'object' && value.year && value.month && value.day) {
+      return new Date(Date.UTC(value.year, value.month - 1, value.day))
+    }
+    return null
+  }
+
+  const handleVisibleRangeChange = range => {
+    if (!range || isFetchingRef.current) return
+    const fromDate = toDate(range.from)
+    const earliest = toDate(earliestTimeRef.current)
+    if (!fromDate || !earliest) return
+    const threshold = new Date(earliest)
+    threshold.setDate(threshold.getDate() + 4)
+    if (fromDate > threshold) return
+    const endDate = new Date(earliest)
+    endDate.setDate(endDate.getDate() - 1)
+    const startDate = new Date(earliest)
+    startDate.setDate(startDate.getDate() - 30)
+    if (endDate < startDate) return
+    const key = `${format(startDate, 'yyyy-MM-dd')}_${format(endDate, 'yyyy-MM-dd')}_${symbol}`
+    if (lastFetchRef.current === key) return
+    lastFetchRef.current = key
+    fetchHistorical({ startDate, endDate, mode: 'merge', trackLoading: false })
+  }
 
   const {
     latestPrice,
@@ -122,12 +177,12 @@ export default function Home() {
 
   return (
     <div className="market-page">
-     <section className="market-actions">
-        <SymbolSearch value={symbol} onChange={setSymbol} onSelect={(s) => { setSymbol(s); onSearch() }} />
-        <button className="primary-button" onClick={onSearch} disabled={loading}>
+      <section className="market-actions">
+        <SymbolSearch value={symbol} onChange={setSymbol} onSelect={(s) => { setSymbol(s); onSearch(s) }} />
+        <button className="primary-button" onClick={() => onSearch()} disabled={loading}>
           {loading ? '로딩...' : '조회'}
         </button>
-      </section>       
+      </section>
 
       <section className="market-hero">
         <div>
@@ -174,7 +229,7 @@ export default function Home() {
             <button className="chip-button">Settings</button>
           </div>
         </div> */}
-        <CandleChart data={data} height={460} />
+        <CandleChart data={data} height={460} onVisibleRangeChange={handleVisibleRangeChange} />
         {loading && <div className="chart-loading">Loading chart...</div>}
       </section>
 
