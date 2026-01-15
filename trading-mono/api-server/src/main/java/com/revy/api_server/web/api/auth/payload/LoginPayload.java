@@ -8,7 +8,7 @@ import jakarta.validation.constraints.NotBlank;
 
 public class LoginPayload {
 
-    @Schema
+    @Schema(name = "LoginPayload.Req")
     public record Req(
             @Email
             @NotBlank
@@ -27,6 +27,7 @@ public class LoginPayload {
         }
     }
 
+    @Schema(name = "LoginPayload.Res")
     public record Res(
             String tokenType,
             String accessToken,

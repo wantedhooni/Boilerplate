@@ -1,9 +1,11 @@
 package com.revy.api_server.web.api.auth.payload;
 
 import com.revy.api_server.web.api.auth.service.dto.UserInfoResult;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 public class UserProfilePayload {
 
+    @Schema(name = "UserProfilePayload.Res")
     public record Res(
             String email,
             String name,
