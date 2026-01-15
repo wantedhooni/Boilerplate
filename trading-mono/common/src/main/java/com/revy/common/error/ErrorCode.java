@@ -11,6 +11,8 @@ public enum ErrorCode {
     ROLE_NOT_FOUND("AUTH-008", "기본 역할 정보가 없습니다."),
     AUTHORITY_NOT_FOUND("AUTH-009", "권한 정보가 없습니다."),
     BEARER_TOKEN_REQUIRED("AUTH-010", "Bearer 토큰이 필요합니다."),
+    EXPIRE_TOKEN("AUTH-011", "만료된 토큰 입니다."),
+    INACTIVE_USER("AUTH-012", "이융 할수 없는 사용자입니다."),
     INTERNAL_ERROR("SYS-001", "서버 오류가 발생했습니다.");
 
     private final String code;
