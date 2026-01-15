@@ -1,5 +1,6 @@
 package com.revy.api_server.web.infra.security;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.revy.api_server.domain.user.Role;
 import com.revy.api_server.domain.user.User;
 import lombok.Getter;
@@ -20,6 +21,8 @@ public class UserPrincipal implements UserDetails {
     private final Long id;
     private final UUID publicId;
     private final String username;
+
+    @JsonIgnore
     private final String password;
     private final Set<String> role;
     private final Set<SimpleGrantedAuthority> authorities;

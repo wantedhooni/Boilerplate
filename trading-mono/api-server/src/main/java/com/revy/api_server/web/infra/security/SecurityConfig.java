@@ -1,5 +1,6 @@
 package com.revy.api_server.web.infra.security;
 
+import com.revy.api_server.web.infra.security.rules.SecurityRules;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,12 +36,9 @@ public class SecurityConfig {
                 .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                        .requestMatchers("/actuator/**").permitAll()
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/market/**").permitAll()
-                        .anyRequest()
-                        .authenticated())
+                        .requestMatchers(SecurityRules.PERMIT_ALL_PATTERNS).permitAll()
+                        .requestMatchers(SecurityRules.AUTHENTICATED_PATTERNS).authenticated()
+                        .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class).build();
     }
 
