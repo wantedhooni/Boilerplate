@@ -9,6 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.PrePersist;
 import lombok.Getter;
+import lombok.ToString;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -19,6 +20,7 @@ import java.util.UUID;
 
 @Getter
 @MappedSuperclass
+@ToString
 @EntityListeners(AuditingEntityListener.class)
 public abstract class BaseEntity<T> {
     @Id
@@ -31,7 +33,9 @@ public abstract class BaseEntity<T> {
 
     @PrePersist
     void prePersist() {
-        this.publicId = UuidCreator.getTimeOrderedEpoch();
+        if (this.publicId == null) {
+            this.publicId = UuidCreator.getTimeOrderedEpoch();
+        }
     }
 
 //    @CreatedBy

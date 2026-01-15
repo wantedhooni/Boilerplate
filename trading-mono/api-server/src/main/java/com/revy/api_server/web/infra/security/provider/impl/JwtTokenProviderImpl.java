@@ -27,7 +27,7 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
      */
     @Override
     public String createAccessToken(User user) {
-        return createToken(user.getId(), jwtProperties.accessTokenExpiration());
+        return createToken(user.getId(), jwtProperties.accessTokenExpirationMin());
     }
 
     /**
@@ -38,7 +38,7 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
      */
     @Override
     public String createRefreshToken(User user) {
-        return createToken(user.getId(), jwtProperties.refreshTokenExpiration());
+        return createToken(user.getId(), jwtProperties.refreshTokenExpirationMin());
     }
 
     /**
@@ -83,15 +83,15 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
      * 사용자 식별자와 만료 시간을 기반으로 토큰을 생성한다.
      *
      * @param userId           사용자 식별자
-     * @param expirationMillis 만료 시간(ms)
+     * @param expirationMin 만료 시간(분)
      * @return JWT 문자열
      */
-    private String createToken(Long userId, long expirationMillis) {
+    private String createToken(Long userId, long expirationMin) {
         Instant now = Instant.now();
         return Jwts.builder()
                    .claim("userId", userId)
                    .issuedAt(Date.from(now))
-                   .expiration(Date.from(now.plusMillis(expirationMillis)))
+                   .expiration(Date.from(now.plusSeconds(expirationMin * 60)))
                    .signWith(getSigningKey())
                    .compact();
     }

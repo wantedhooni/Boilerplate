@@ -1,9 +1,13 @@
 package com.revy.api_server.web.infra.security;
 
 import com.revy.api_server.domain.user.User;
+import com.revy.api_server.domain.user.UserStatus;
 import com.revy.api_server.domain.user.repo.UserRepository;
+import com.revy.api_server.web.exception.AuthException;
 import com.revy.api_server.web.infra.security.provider.JwtTokenProvider;
 import com.revy.api_server.web.infra.security.token.TokenStore;
+import com.revy.common.error.ApiException;
+import com.revy.common.error.ErrorCode;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,12 +15,14 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -26,29 +32,58 @@ import java.util.Optional;
  */
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final UserRepository userRepository;
     private final TokenStore tokenStore;
+    private final HandlerExceptionResolver resolver;
+
+
+    public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider, UserRepository userRepository, TokenStore tokenStore, @Qualifier("handlerExceptionResolver") HandlerExceptionResolver resolver) {
+        this.jwtTokenProvider = jwtTokenProvider;
+        this.userRepository = userRepository;
+        this.tokenStore = tokenStore;
+        this.resolver = resolver;
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String token = resolveToken(request);
         log.debug("token: {}", token);
-        if (StringUtils.hasText(token) && jwtTokenProvider.validateToken(token) && !tokenStore.isAccessTokenBlacklisted(token)) {
+        if (StringUtils.hasText(token)) {
+            if (!jwtTokenProvider.validateToken(token)) {
+                resolver.resolveException(request, response, null, new AuthException(ErrorCode.INVALID_TOKEN));
+                return;
+            }
+            if (tokenStore.isAccessTokenBlacklisted(token)) {
+                resolver.resolveException(request, response, null, new AuthException(ErrorCode.EXPIRE_TOKEN));
+                return;
+            }
+
             Long userId = jwtTokenProvider.getUserId(token);
             Optional<User> user = userRepository.findById(userId);
-            if (user.isPresent()) {
-                MDC.put("UserId", String.valueOf(userId));
-                UserPrincipal principal = UserPrincipal.from(user.get());
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+            if (!user.isPresent()) {
+                resolver.resolveException(request, response, null, new AuthException(ErrorCode.USER_NOT_FOUND));
+                return;
+                // 유효하지 않은 사용자인 경우 필터 체인을 계속 진행하지 않고 종료
             }
+            MDC.put("UserId", String.valueOf(userId));
+            UserPrincipal principal = UserPrincipal.from(user.get());
+
+            if(user.get().getStatus() != UserStatus.ACTIVE) {
+                resolver.resolveException(request, response, null, new AuthException(ErrorCode.INACTIVE_USER));
+                return;
+            }
+
+            UsernamePasswordAuthenticationToken authentication =
+                    new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
+            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
         }
+
+
         filterChain.doFilter(request, response);
     }
 

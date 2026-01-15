@@ -1,10 +1,19 @@
+
+logging:
+    level:
+        com.revy.*: DEBUG
+        org.springframework.web: TRACE
+        org.springframework.security: DEBUG
+        # org.hibernate.SQL: DEBUG
+        # org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
 app:
   security:
     jwt:
       secret: "3e44cd44e379449d8edc3271c818fdddb6a94bdfefe22ca175b9e8e133875a793d56dced0c06dd4faecdc0d3f3d8dc06dc2b4d6fb0bf0d85cd9e2c202bc345b3"
       issuer: "trading-platform"
-      access-token-expiration: 1800_000
-      refresh-token-expiration: 1209600_000
+      access-token-expiration-min: 120
+      refresh-token-expiration-min: 480
 
 server:
   port: 8080
@@ -58,7 +67,6 @@ management:
     web:
       exposure:
         include: health,info
-
 
 yfinance:
   base-url: http://localhost:18000

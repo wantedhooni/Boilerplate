@@ -6,8 +6,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public record JwtProp(
         String secret,
         String issuer,
-        long accessTokenExpiration,
-        long refreshTokenExpiration
+        long accessTokenExpirationMin,
+        long refreshTokenExpirationMin
 
 ) {
 }
