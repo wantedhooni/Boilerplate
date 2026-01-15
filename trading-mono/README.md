@@ -21,6 +21,17 @@ API GATEWAY + MSA로 먼저 할려고 하니 머리가 아파서
 - - ACCOUNT 설계는 DBS 참고해서 작성해보자.
 - - https://www.dbs.com/dbsdevelopers/discover/index.html
 
+### 잡담
+---
+
+## Projections.constructor
+개인적으로는 실수하기 수위서 사용하고 싶지 않은데
+record를 사용하면 결국은 생성자 기반이라서...
+Projection 추가될때 순서때문에 분명히 실수 할 소지가 많을건데...
+그렇다고 field사용하면 너무 너무 느리고,
+class / setter 사용하면 경기를 일으키고
+트랜드가 참 머같다.
+
 
 
 # 작업 진행중 UI 
