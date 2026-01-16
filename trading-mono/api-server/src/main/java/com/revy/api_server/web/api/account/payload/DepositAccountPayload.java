@@ -1,7 +1,7 @@
 package com.revy.api_server.web.api.account.payload;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NegativeOrZero;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
@@ -15,7 +15,7 @@ public class DepositAccountPayload {
             String accountNo,
 
             @NotNull
-            @NegativeOrZero
+            @Positive
             BigDecimal amount
     ) {
     }

@@ -10,7 +10,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.nio.file.AccessDeniedException;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 
 
 // TODO:Revy -> 나중에 Exception 정리해서 합치자.
@@ -48,10 +49,23 @@ public class ExceptionHandlerAdvice {
     }
 
     @ExceptionHandler(ApiException.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ApiResponse<Void> handleApiException(ApiException e) {
-        log.error("unknown exception:", e);
-        return ApiResponse.fail(e.getCode(), e.getMessage());
+    public ResponseEntity<ApiResponse<Void>> handleApiException(ApiException e) {
+        log.error("api exception:", e);
+        HttpStatus status = resolveStatus(e);
+        return ResponseEntity.status(status).body(ApiResponse.fail(e.getCode(), e.getMessage()));
+    }
+
+    private HttpStatus resolveStatus(ApiException e) {
+        if (e.getErrorCode() != null) {
+            return switch (e.getErrorCode()) {
+                case DUPLICATE_EMAIL -> HttpStatus.CONFLICT;
+                case USER_NOT_FOUND -> HttpStatus.NOT_FOUND;
+                case INVALID_PASSWORD, INVALID_TOKEN, INVALID_REFRESH_TOKEN, REFRESH_TOKEN_NOT_FOUND,
+                        REFRESH_TOKEN_MISMATCH, EXPIRE_TOKEN, INACTIVE_USER -> HttpStatus.UNAUTHORIZED;
+                default -> HttpStatus.BAD_REQUEST;
+            };
+        }
+        return HttpStatus.BAD_REQUEST;
     }
 
 }

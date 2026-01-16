@@ -61,7 +61,7 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public LoginResult login(LoginCommand loginCommand) {
         User user = userQueryRepository.findByEmail(loginCommand.getEmail())
-                                       .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+                                       .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND));
         if (!passwordEncoder.matches(loginCommand.getPassword(), user.getPassword())) {
             throw new ApiException(ErrorCode.INVALID_PASSWORD);
         }
@@ -94,8 +94,10 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public void logout(String accessToken) {
         if (!jwtTokenProvider.validateToken(accessToken)) throw new ApiException(ErrorCode.INVALID_TOKEN);
+        Long userId = jwtTokenProvider.getUserId(accessToken);
         Duration ttl = Duration.between(java.time.Instant.now(), jwtTokenProvider.getExpiration(accessToken));
         tokenStore.blacklistAccessToken(accessToken, ttl);
+        tokenStore.deleteRefreshToken(userId);
     }
 
 
