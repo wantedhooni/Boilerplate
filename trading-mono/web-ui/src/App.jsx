@@ -5,6 +5,7 @@ import Login from './pages/Login'
 import Signup from './pages/Signup'
 import Market from './pages/Market'
 import Account from './pages/Account'
+import Trade from './pages/Trade'
 import { useAuth } from './auth/AuthProvider'
 import ThemeToggle from './components/ThemeToggle'
 
@@ -33,6 +34,7 @@ export default function App() {
           ) : (
             <>
               <Link to="/account">Account</Link>
+              <Link to="/trade">Trade</Link>
               <span className="greeting">{displayName} 님, 안녕하세요 </span>
               <button onClick={handleLogout} className="logout">Logout</button>
             </>
@@ -49,6 +51,7 @@ export default function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/market" element={<Market />} />
           <Route path="/account" element={<Account />} />
+          <Route path="/trade" element={<Trade />} />
         </Routes>
       </main>
     </div>

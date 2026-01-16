@@ -114,6 +114,7 @@ public class AccountUseCaseImpl implements AccountUseCase {
         );
         accountRepo.addBalance(accountNo, amount);
         accountStatementLineRepo.save(stmt);
+        //TODO:Revy 현실 / 현업에서는 commit after뒤에 노티가 있겠지?
     }
 
     @Override
@@ -148,11 +149,14 @@ public class AccountUseCaseImpl implements AccountUseCase {
 
         accountRepo.addBalance(accountNo, negateAmount);
         accountStatementLineRepo.save(stmt);
+        //TODO:Revy 현실 / 현업에서는 commit after뒤에 노티가 있겠지?
     }
 
     @Override
     @Transactional
     public TransferPayload.Res transfer(Long userId, TransferPayload.Req req) {
+
+        // 1. valid
         Assert.notNull(userId, "userId is null");
         Assert.notNull(req, "TransferPayload.Req is null");
         Assert.hasText(req.fromAccountNo(), "fromAccountNo is empty");
@@ -160,14 +164,22 @@ public class AccountUseCaseImpl implements AccountUseCase {
         Assert.notNull(req.amount(), "amount is null");
         Assert.isTrue(!BigDecimalUtil.isZero(req.amount()), "amount must be positive");
 
+        // 2. 사용자 계좌 검증 및 잔고 확인
         Account fromAccount = accountRepo.findOneByOwnerIdAndAccountNo(userId, req.fromAccountNo())
                                          .orElseThrow(() -> new AccountException("TRANSFER-001", String.format("사용자의 계좌를 찾지 못했습니다. 요청 계좌번호: %s", req.fromAccountNo())));
-        Account toAccount = accountRepo.findOneByAccountNo(req.toAccountNo())
-                                       .orElseThrow(() -> new AccountException("TRANSFER-002", String.format("수취 계좌를 찾지 못했습니다. 요청 계좌번호: %s", req.fromAccountNo())));
-
         if (fromAccount.getStatus() != AccountStatus.ACTIVE) {
             throw new AccountException("TRANSFER-004", "사용자의 계좌는 이체를 수행하지 못하는 상태입니다.");
         }
+        Assert.isTrue(BigDecimalUtil.isGreaterThanOrEqualTo(fromAccount.getCashBalance()
+                                                                       .subtract(req.amount()), BigDecimal.ZERO), "Insufficient funds for withdrawal");
+
+
+        // 3. 수취 계좌 검증
+        /*
+         TODO:Revy 오픈뱅킹이나 은행시스템이용 계좌주 조회해서 유효성 검증 해야함(타은행은 DB에 없으니).
+         */
+        Account toAccount = accountRepo.findOneByAccountNo(req.toAccountNo())
+                                       .orElseThrow(() -> new AccountException("TRANSFER-002", String.format("수취 계좌를 찾지 못했습니다. 요청 계좌번호: %s", req.fromAccountNo())));
 
         if (toAccount.getStatus() != AccountStatus.ACTIVE) {
             throw new AccountException("TRANSFER-005", "수취계좌는 이체를 수행하지 못하는 상태입니다.");
@@ -177,10 +189,8 @@ public class AccountUseCaseImpl implements AccountUseCase {
             throw new AccountException("TRANSFER-003", "입금/출금 계좌의 통화가 일치하지 않습니다.");
         }
 
-        Assert.isTrue(BigDecimalUtil.isGreaterThanOrEqualTo(fromAccount.getCashBalance()
-                                                                       .subtract(req.amount()), BigDecimal.ZERO), "Insufficient funds for withdrawal");
 
-        // 2. FROM Account 출금  처리
+        // 4. FROM Account 출금  처리
         BigDecimal fromAccountNewBalance = fromAccount.getCashBalance().subtract(req.amount());
         BigDecimal negateAmount = req.amount().negate(); // 요청 금에 - 부호 추가
         AccountStatementLine fromStmt = AccountStatementLine.create(
@@ -193,8 +203,13 @@ public class AccountUseCaseImpl implements AccountUseCase {
                 req.fromDescription()
         );
         accountRepo.addBalance(req.fromAccountNo(), negateAmount);
+        /*
 
-        // 2. To Account 입금
+        TODO:Revy 금융권 실제면 여기서 끝나고 금융망으로 던져버리고, noti로 끝나야 하는데...
+        이벤트 발행으로 바꿔버릴까?
+         */
+
+        // 5. To Account 입금
         BigDecimal toAccountNewBalance = toAccount.getCashBalance().add(req.amount());
         AccountStatementLine toStmt = AccountStatementLine.create(
                 toAccount,
