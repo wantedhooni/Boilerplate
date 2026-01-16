@@ -10,7 +10,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -19,7 +18,6 @@ import java.util.stream.Collectors;
 @Getter
 public class UserPrincipal implements UserDetails {
     private final Long id;
-    private final UUID publicId;
     private final String username;
 
     @JsonIgnore
@@ -27,9 +25,8 @@ public class UserPrincipal implements UserDetails {
     private final Set<String> role;
     private final Set<SimpleGrantedAuthority> authorities;
 
-    public UserPrincipal(Long id, UUID publicId, String username, String password, Set<String> role, Set<SimpleGrantedAuthority> authorities) {
+    public UserPrincipal(Long id, String username, String password, Set<String> role, Set<SimpleGrantedAuthority> authorities) {
         this.id = id;
-        this.publicId = publicId;
         this.username = username;
         this.password = password;
         this.role = role;
@@ -50,7 +47,7 @@ public class UserPrincipal implements UserDetails {
                                                       .map(authority -> new SimpleGrantedAuthority(authority.getName()))
                                                       .collect(Collectors.toUnmodifiableSet());
 
-        return new UserPrincipal(user.getId(), user.getPublicId(), user.getEmail(), user.getPassword(), roles, authorities);
+        return new UserPrincipal(user.getId(), user.getEmail(), user.getPassword(), roles, authorities);
     }
 
     @Override

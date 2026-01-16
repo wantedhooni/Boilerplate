@@ -68,7 +68,7 @@ class AccountUseCaseImplTest {
         doReturn(jpaQuery).when(jpaQuery).orderBy(org.mockito.Mockito.<OrderSpecifier<?>>any());
 
         List<MyAccountsPayload.Res> expected = List.of(
-                new MyAccountsPayload.Res(null, AccountType.CASH, "123", "USD", null, BigDecimal.ZERO, BigDecimal.ZERO)
+                new MyAccountsPayload.Res(AccountType.CASH, "123", "USD", null, BigDecimal.ZERO, BigDecimal.ZERO)
         );
         when(jpaQuery.fetch()).thenReturn(expected);
 
@@ -80,19 +80,19 @@ class AccountUseCaseImplTest {
 
     @Test
     @DisplayName("입금 시 잔고가 증가된다")
-    void depositAccount_positiveAmount_updatesBalance() {
+    void deposit_positiveAmount_updatesBalance() {
         Account account = Account.createNewAccount(1L, AccountType.CASH, "USD");
-        when(accountRepo.findByOwnerIdAndAccountNo(1L, "123")).thenReturn(Optional.of(account));
+        when(accountRepo.findOneByOwnerIdAndAccountNo(1L, "123")).thenReturn(Optional.of(account));
 
-        accountUseCase.depositAccount(1L, "123", BigDecimal.TEN);
+        accountUseCase.deposit(1L, "123", BigDecimal.TEN);
 
-        verify(accountRepo).deposit("123", BigDecimal.TEN);
+        verify(accountRepo).addBalance("123", BigDecimal.TEN);
     }
 
     @Test
     @DisplayName("입금 금액이 0 이하이면 예외가 발생한다")
-    void depositAccount_nonPositiveAmount_throwsException() {
-        assertThatThrownBy(() -> accountUseCase.depositAccount(1L, "123", BigDecimal.ZERO))
+    void deposit_nonPositiveAmount_throwsException() {
+        assertThatThrownBy(() -> accountUseCase.deposit(1L, "123", BigDecimal.ZERO))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 }

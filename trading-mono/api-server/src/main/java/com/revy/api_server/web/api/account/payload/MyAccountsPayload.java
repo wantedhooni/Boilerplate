@@ -24,7 +24,6 @@ public class MyAccountsPayload {
 
     @Schema(name = "MyAccountsPayload.Res")
     public record Res(
-            UUID publicId,
             AccountType type,
             String accountNo,
             String currency,

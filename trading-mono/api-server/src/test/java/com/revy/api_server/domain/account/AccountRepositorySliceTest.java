@@ -45,7 +45,7 @@ class AccountRepositorySliceTest {
         Account account = Account.createNewAccount(1L, AccountType.CASH, "USD");
         Account saved = accountRepo.save(account);
 
-        var found = accountRepo.findByOwnerIdAndAccountNo(1L, saved.getAccountNo());
+        var found = accountRepo.findOneByOwnerIdAndAccountNo(1L, saved.getAccountNo());
 
         assertThat(found).isPresent();
         assertThat(found.get().getAccountNo()).isEqualTo(saved.getAccountNo());

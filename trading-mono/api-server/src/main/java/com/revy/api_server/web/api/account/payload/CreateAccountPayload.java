@@ -6,7 +6,6 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
-import java.util.UUID;
 
 public class CreateAccountPayload {
 
@@ -22,7 +21,6 @@ public class CreateAccountPayload {
 
     @Schema(name = "CreateAccountPayload.Res")
     public record Res(
-            UUID publicId,
             AccountType type,
             String accountNo,
             String currency,

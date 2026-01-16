@@ -71,7 +71,6 @@ class AccountApiMockMvcTest {
     @DisplayName("계좌 생성 요청 시 계좌번호를 반환한다")
     void createAccount_returnsAccountNo() throws Exception {
         CreateAccountPayload.Res res = new CreateAccountPayload.Res(
-                UUID.randomUUID(),
                 AccountType.CASH,
                 "acc",
                 "USD",
@@ -95,7 +94,6 @@ class AccountApiMockMvcTest {
     void getMyAccounts_returnsList() throws Exception {
         List<MyAccountsPayload.Res> res = List.of(
                 new MyAccountsPayload.Res(
-                        UUID.randomUUID(),
                         AccountType.CASH,
                         "acc",
                         "USD",
@@ -114,7 +112,7 @@ class AccountApiMockMvcTest {
     @Test
     @DisplayName("입금 요청 시 성공 응답을 반환한다")
     void deposit_returnsSuccess() throws Exception {
-        doNothing().when(accountUseCase).depositAccount(any(), any(), any());
+        doNothing().when(accountUseCase).deposit(any(), any(), any());
         DepositAccountPayload.Req req = new DepositAccountPayload.Req("acc", BigDecimal.TEN);
 
         mockMvc.perform(post("/api/account/deposit")

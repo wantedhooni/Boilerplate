@@ -15,6 +15,8 @@ public enum ErrorCode {
     INACTIVE_USER("AUTH-012", "이융 할수 없는 사용자입니다."),
     INTERNAL_ERROR("SYS-001", "서버 오류가 발생했습니다.");
 
+
+
     private final String code;
     private final String message;
 

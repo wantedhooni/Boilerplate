@@ -1,5 +1,6 @@
 package com.revy.api_server.web.api.account;
 
+import com.revy.api_server.domain.account.enums.AccountType;
 import com.revy.api_server.domain.user.Role;
 import com.revy.api_server.domain.user.User;
 import com.revy.api_server.web.api.account.payload.CreateAccountPayload;
@@ -38,8 +39,7 @@ class AccountApiTest {
     @DisplayName("계좌 생성 응답이 반환된다")
     void createAccount_returnsResponse() throws Exception {
         CreateAccountPayload.Res res = new CreateAccountPayload.Res(
-                UUID.randomUUID(),
-                com.revy.api_server.domain.account.enums.AccountType.CASH,
+                AccountType.CASH,
                 "acc",
                 "USD",
                 BigDecimal.ZERO,
@@ -48,7 +48,7 @@ class AccountApiTest {
         when(accountUseCase.create(any(), any(), any())).thenReturn(res);
 
         CreateAccountPayload.Req req = new CreateAccountPayload.Req(
-                com.revy.api_server.domain.account.enums.AccountType.CASH,
+                AccountType.CASH,
                 "USD"
         );
 
@@ -62,7 +62,7 @@ class AccountApiTest {
     @DisplayName("내 계좌 목록 조회 결과를 반환한다")
     void getMyAccounts_returnsList() throws Exception {
         List<MyAccountsPayload.Res> res = List.of(
-                new MyAccountsPayload.Res(UUID.randomUUID(),
+                new MyAccountsPayload.Res(
                         com.revy.api_server.domain.account.enums.AccountType.CASH,
                         "acc",
                         "USD",
@@ -81,11 +81,11 @@ class AccountApiTest {
     @Test
     @DisplayName("입금 요청 시 성공 응답을 반환한다")
     void depositAccount_returnsSuccess() throws Exception {
-        doNothing().when(accountUseCase).depositAccount(any(), any(), any());
+        doNothing().when(accountUseCase).deposit(any(), any(), any());
 
         DepositAccountPayload.Req req = new DepositAccountPayload.Req("acc", BigDecimal.TEN);
 
-        DepositAccountPayload.Res result = accountApi.depositAccount(auth(), req);
+        DepositAccountPayload.Res result = accountApi.deposit(auth(), req);
 
         assertThat(result.success()).isTrue();
     }

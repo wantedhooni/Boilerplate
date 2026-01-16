@@ -23,6 +23,7 @@ public class BigDecimalUtil {
      * 첫 번째 BigDecimal이 두 번째 BigDecimal보다 큰지 확인합니다.
      * null 안전성을 위해 Objects.requireNonNullElse를 사용하거나 별도의 null 처리가 필요합니다.
      * 여기서는 null이 아닌 경우를 가정합니다.
+     * (var1 > var2) == true
      */
     public static boolean isGreaterThan(BigDecimal val1, BigDecimal val2) {
         if (val1 == null || val2 == null) {
@@ -31,6 +32,21 @@ public class BigDecimalUtil {
         }
         // compareTo 결과가 0보다 크면(1) val1이 더 큰 것입니다.
         return val1.compareTo(val2) > 0;
+    }
+
+    /**
+     * 첫 번째 BigDecimal이 두 번째 BigDecimal보다 큰거나 같은지 확인합니다.
+     * null 안전성을 위해 Objects.requireNonNullElse를 사용하거나 별도의 null 처리가 필요합니다.
+     * 여기서는 null이 아닌 경우를 가정합니다.
+     * (var1 >= var2) == true
+     */
+    public static boolean isGreaterThanOrEqualTo(BigDecimal val1, BigDecimal val2) {
+        if (val1 == null || val2 == null) {
+            // 요구사항에 따라 null 처리 방식을 조정할 수 있습니다.
+            return false;
+        }
+        // compareTo 결과가 0보다 크면(1) val1이 더 큰 것입니다.
+        return val1.compareTo(val2) > 0 || val1.compareTo(val2) == 0;
     }
 
     /**

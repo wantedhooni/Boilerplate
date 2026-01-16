@@ -4,12 +4,20 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.revy.api_server.domain.account.Account;
+import com.revy.api_server.domain.account.AccountStatementLine;
 import com.revy.api_server.domain.account.QAccount;
+import com.revy.api_server.domain.account.enums.AccountStatus;
 import com.revy.api_server.domain.account.enums.AccountType;
+import com.revy.api_server.domain.account.enums.DirectionType;
+import com.revy.api_server.domain.account.enums.StatementType;
 import com.revy.api_server.domain.account.repo.AccountRepo;
+import com.revy.api_server.domain.account.repo.AccountStatementLineRepo;
 import com.revy.api_server.web.api.account.payload.CreateAccountPayload;
 import com.revy.api_server.web.api.account.payload.MyAccountsPayload;
+import com.revy.api_server.web.api.account.payload.TransferPayload;
 import com.revy.api_server.web.api.account.service.AccountUseCase;
+import com.revy.api_server.web.exception.AccountException;
+import com.revy.common.error.ApiException;
 import com.revy.common.utils.BigDecimalUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +33,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AccountUseCaseImpl implements AccountUseCase {
     private final AccountRepo accountRepo;
+    private final AccountStatementLineRepo accountStatementLineRepo;
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
@@ -51,7 +60,6 @@ public class AccountUseCaseImpl implements AccountUseCase {
 
         JPAQuery<MyAccountsPayload.Res> query = jpaQueryFactory
                 .select(Projections.constructor(MyAccountsPayload.Res.class,
-                        QAccount.account.publicId,
                         QAccount.account.type,
                         QAccount.account.accountNo,
                         QAccount.account.currency,
@@ -83,21 +91,130 @@ public class AccountUseCaseImpl implements AccountUseCase {
 
     @Override
     @Transactional
-    public void depositAccount(Long userId, String accountNo, BigDecimal amount) {
+    public void deposit(Long userId, String accountNo, BigDecimal amount) {
         Assert.notNull(userId, "userId is null");
         Assert.hasText(accountNo, "accountNo is empty");
         Assert.notNull(amount, "amount is empty");
-        Assert.isTrue(BigDecimalUtil.isPositive(amount), "amount is not positive");
+        Assert.isTrue(!BigDecimalUtil.isZero(amount), "amount must be positive");
 
-        accountRepo.findByOwnerIdAndAccountNo(userId, accountNo)
+        Account account = accountRepo.findOneByOwnerIdAndAccountNo(userId, accountNo)
+                   .orElseThrow(() -> new IllegalArgumentException("Account not found: " + accountNo));
+        BigDecimal newBalance = account.getCashBalance().add(amount);
+        AccountStatementLine stmt = AccountStatementLine.create(
+                account,
+                DirectionType.CREDIT,
+                StatementType.DEPOSIT,
+                amount,
+                newBalance,
+                "DEP-" + System.currentTimeMillis(),
+                "Deposit of " + amount + " to account " +  accountNo
+        );
+        accountRepo.addBalance(accountNo, amount);
+        accountStatementLineRepo.save(stmt);
+    }
+
+    @Override
+    @Transactional
+    public void withdraw(Long userId, String accountNo, BigDecimal amount) {
+        // 1. validation
+        Assert.notNull(userId, "userId is null");
+        Assert.hasText(accountNo, "accountNo is empty");
+        Assert.notNull(amount, "amount is empty");
+        Assert.isTrue(!BigDecimalUtil.isZero(amount), "amount must be positive");
+        Account account = accountRepo.findOneByOwnerIdAndAccountNo(userId, accountNo)
                                      .orElseThrow(() -> new IllegalArgumentException("Account not found: " + accountNo));
+        /*
+        출금 타입에 따라서 체크 안해야 할수도 있다. 미수금 발생 등등
+         */
+        Assert.isTrue(BigDecimalUtil.isGreaterThanOrEqualTo(account.getCashBalance().subtract(amount), BigDecimal.ZERO), "Insufficient funds for withdrawal");
 
-        accountRepo.deposit(accountNo, amount);
+        // 2. 출금  처리
+        BigDecimal newBalance = account.getCashBalance().subtract(amount);
+
+        BigDecimal negateAmount = amount.negate(); // 요청 금에 - 부호 추가
+        AccountStatementLine stmt = AccountStatementLine.create(
+                account,
+                DirectionType.DEBIT,
+                StatementType.WITHDRAW,
+                negateAmount,
+                newBalance,
+                "WDR-" + System.currentTimeMillis(),
+                "Withdrawal of " + amount + " from account " + accountNo
+        );
+
+        accountRepo.addBalance(accountNo, negateAmount);
+        accountStatementLineRepo.save(stmt);
+    }
+
+    @Override
+    @Transactional
+    public TransferPayload.Res transfer(Long userId, TransferPayload.Req req) {
+        Assert.notNull(userId, "userId is null");
+        Assert.notNull(req, "TransferPayload.Req is null");
+        Assert.hasText(req.fromAccountNo(), "fromAccountNo is empty");
+        Assert.hasText(req.toAccountNo(), "toAccountNo is empty");
+        Assert.notNull(req.amount(), "amount is null");
+        Assert.isTrue(!BigDecimalUtil.isZero(req.amount()), "amount must be positive");
+
+        Account fromAccount = accountRepo.findOneByOwnerIdAndAccountNo(userId, req.fromAccountNo())
+                                         .orElseThrow(() -> new AccountException("TRANSFER-001", String.format("사용자의 계좌를 찾지 못했습니다. 요청 계좌번호: %s", req.fromAccountNo())));
+        Account toAccount = accountRepo.findOneByAccountNo(req.toAccountNo())
+                                       .orElseThrow(() -> new AccountException("TRANSFER-002", String.format("수취 계좌를 찾지 못했습니다. 요청 계좌번호: %s", req.fromAccountNo())));
+
+        if(fromAccount.getStatus() != AccountStatus.ACTIVE){
+            throw new AccountException("TRANSFER-004", "사용자의 계좌는 이체를 수행하지 못하는 상태입니다.");
+        }
+
+        if(toAccount.getStatus() != AccountStatus.ACTIVE){
+            throw new AccountException("TRANSFER-005", "수취계좌는 이체를 수행하지 못하는 상태입니다.");
+        }
+
+        if(!fromAccount.getCurrency().equals(toAccount.getCurrency())) {
+            throw new AccountException("TRANSFER-003", "입금/출금 계좌의 통화가 일치하지 않습니다.");
+        }
+
+        Assert.isTrue(BigDecimalUtil.isGreaterThanOrEqualTo(fromAccount.getCashBalance().subtract(req.amount()), BigDecimal.ZERO), "Insufficient funds for withdrawal");
+
+        // 2. FROM Account 출금  처리
+        BigDecimal fromAccountNewBalance = fromAccount.getCashBalance().subtract(req.amount());
+        BigDecimal negateAmount = req.amount().negate(); // 요청 금에 - 부호 추가
+        AccountStatementLine fromStmt = AccountStatementLine.create(
+                fromAccount,
+                DirectionType.DEBIT,
+                StatementType.TRANSFER_OUT,
+                negateAmount,
+                fromAccountNewBalance,
+                req.referenceId(),
+                req.fromDescription()
+        );
+        accountRepo.addBalance(req.fromAccountNo(), negateAmount);
+
+        // 2. To Account 입금
+        BigDecimal toAccountNewBalance = toAccount.getCashBalance().add(req.amount());
+        AccountStatementLine toStmt = AccountStatementLine.create(
+                toAccount,
+                DirectionType.CREDIT,
+                StatementType.TRANSFER_IN,
+                req.amount(),
+                toAccountNewBalance,
+                null,
+                req.toDescription()
+        );
+        accountRepo.addBalance(req.toAccountNo(), req.amount());
+        accountStatementLineRepo.save(fromStmt);
+        accountStatementLineRepo.save(toStmt);
+
+        return new TransferPayload.Res(
+                req.fromAccountNo(),
+                req.toAccountNo(),
+                req.amount(),
+                fromAccountNewBalance,
+                req.referenceId());
     }
 
     static class mapper {
         public static CreateAccountPayload.Res convertCreateAccountRes(Account newAccount) {
-            return new CreateAccountPayload.Res(newAccount.getPublicId(), newAccount.getType(), newAccount.getAccountNo(), newAccount.getCurrency(), newAccount.getCashBalance(), newAccount.getAvailableCash());
+            return new CreateAccountPayload.Res(newAccount.getType(), newAccount.getAccountNo(), newAccount.getCurrency(), newAccount.getCashBalance(), newAccount.getAvailableCash());
         }
     }
 }
