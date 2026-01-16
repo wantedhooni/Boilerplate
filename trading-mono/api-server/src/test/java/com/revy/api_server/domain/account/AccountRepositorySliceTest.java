@@ -42,7 +42,7 @@ class AccountRepositorySliceTest {
     @Test
     @DisplayName("계좌 저장 후 계좌번호로 조회된다")
     void saveAndFindByOwnerAndAccountNo() {
-        Account account = Account.createNewAccount(1L, AccountType.CASH, "USD");
+        Account account = Account.createNewAccount(1L, "09900010", AccountType.CASH, "USD");
         Account saved = accountRepo.save(account);
 
         var found = accountRepo.findOneByOwnerIdAndAccountNo(1L, saved.getAccountNo());
@@ -54,7 +54,7 @@ class AccountRepositorySliceTest {
     @Test
     @DisplayName("Querydsl로 소유자 조건 조회가 가능하다")
     void querydslFindByOwner() {
-        Account account = Account.createNewAccount(2L, AccountType.CASH, "USD");
+        Account account = Account.createNewAccount(2L, "09900010", AccountType.CASH, "USD");
         accountRepo.save(account);
 
         Account result = jpaQueryFactory.selectFrom(QAccount.account)

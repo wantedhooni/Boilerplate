@@ -1,4 +1,4 @@
-package com.revy.api_server.web.api.account.service.impl;
+package com.revy.api_server.web.api.account.usecase.impl;
 
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -12,12 +12,12 @@ import com.revy.api_server.domain.account.enums.DirectionType;
 import com.revy.api_server.domain.account.enums.StatementType;
 import com.revy.api_server.domain.account.repo.AccountRepo;
 import com.revy.api_server.domain.account.repo.AccountStatementLineRepo;
+import com.revy.api_server.domain.account.service.AccountService;
 import com.revy.api_server.web.api.account.payload.CreateAccountPayload;
 import com.revy.api_server.web.api.account.payload.MyAccountsPayload;
 import com.revy.api_server.web.api.account.payload.TransferPayload;
-import com.revy.api_server.web.api.account.service.AccountUseCase;
+import com.revy.api_server.web.api.account.usecase.AccountUseCase;
 import com.revy.api_server.web.exception.AccountException;
-import com.revy.common.error.ApiException;
 import com.revy.common.utils.BigDecimalUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +34,11 @@ import java.util.List;
 public class AccountUseCaseImpl implements AccountUseCase {
     private final AccountRepo accountRepo;
     private final AccountStatementLineRepo accountStatementLineRepo;
+    private final AccountService accountService;
     private final JPAQueryFactory jpaQueryFactory;
+
+    private final String BBB = "999"; // 서비스/기관 코드(임시)
+    private final String PPP = "001"; // 상품/테넌트/채널
 
     @Override
     @Transactional
@@ -42,10 +46,9 @@ public class AccountUseCaseImpl implements AccountUseCase {
         Assert.notNull(userId, "userId is null");
         Assert.notNull(accountType, "accountType is null");
         Assert.hasText(currency, "currency is empty");
-        Account newAccount = Account.createNewAccount(userId, accountType, currency);
+        Account newAccount = Account.createNewAccount(userId, accountService.createSecuritiesAccountNumber(PPP), accountType, currency);
         newAccount = accountRepo.save(newAccount);
         return mapper.convertCreateAccountRes(newAccount);
-
     }
 
     @Override
@@ -98,7 +101,7 @@ public class AccountUseCaseImpl implements AccountUseCase {
         Assert.isTrue(!BigDecimalUtil.isZero(amount), "amount must be positive");
 
         Account account = accountRepo.findOneByOwnerIdAndAccountNo(userId, accountNo)
-                   .orElseThrow(() -> new IllegalArgumentException("Account not found: " + accountNo));
+                                     .orElseThrow(() -> new IllegalArgumentException("Account not found: " + accountNo));
         BigDecimal newBalance = account.getCashBalance().add(amount);
         AccountStatementLine stmt = AccountStatementLine.create(
                 account,
@@ -107,7 +110,7 @@ public class AccountUseCaseImpl implements AccountUseCase {
                 amount,
                 newBalance,
                 "DEP-" + System.currentTimeMillis(),
-                "Deposit of " + amount + " to account " +  accountNo
+                "Deposit of " + amount + " to account " + accountNo
         );
         accountRepo.addBalance(accountNo, amount);
         accountStatementLineRepo.save(stmt);
@@ -126,7 +129,8 @@ public class AccountUseCaseImpl implements AccountUseCase {
         /*
         출금 타입에 따라서 체크 안해야 할수도 있다. 미수금 발생 등등
          */
-        Assert.isTrue(BigDecimalUtil.isGreaterThanOrEqualTo(account.getCashBalance().subtract(amount), BigDecimal.ZERO), "Insufficient funds for withdrawal");
+        Assert.isTrue(BigDecimalUtil.isGreaterThanOrEqualTo(account.getCashBalance()
+                                                                   .subtract(amount), BigDecimal.ZERO), "Insufficient funds for withdrawal");
 
         // 2. 출금  처리
         BigDecimal newBalance = account.getCashBalance().subtract(amount);
@@ -161,19 +165,20 @@ public class AccountUseCaseImpl implements AccountUseCase {
         Account toAccount = accountRepo.findOneByAccountNo(req.toAccountNo())
                                        .orElseThrow(() -> new AccountException("TRANSFER-002", String.format("수취 계좌를 찾지 못했습니다. 요청 계좌번호: %s", req.fromAccountNo())));
 
-        if(fromAccount.getStatus() != AccountStatus.ACTIVE){
+        if (fromAccount.getStatus() != AccountStatus.ACTIVE) {
             throw new AccountException("TRANSFER-004", "사용자의 계좌는 이체를 수행하지 못하는 상태입니다.");
         }
 
-        if(toAccount.getStatus() != AccountStatus.ACTIVE){
+        if (toAccount.getStatus() != AccountStatus.ACTIVE) {
             throw new AccountException("TRANSFER-005", "수취계좌는 이체를 수행하지 못하는 상태입니다.");
         }
 
-        if(!fromAccount.getCurrency().equals(toAccount.getCurrency())) {
+        if (!fromAccount.getCurrency().equals(toAccount.getCurrency())) {
             throw new AccountException("TRANSFER-003", "입금/출금 계좌의 통화가 일치하지 않습니다.");
         }
 
-        Assert.isTrue(BigDecimalUtil.isGreaterThanOrEqualTo(fromAccount.getCashBalance().subtract(req.amount()), BigDecimal.ZERO), "Insufficient funds for withdrawal");
+        Assert.isTrue(BigDecimalUtil.isGreaterThanOrEqualTo(fromAccount.getCashBalance()
+                                                                       .subtract(req.amount()), BigDecimal.ZERO), "Insufficient funds for withdrawal");
 
         // 2. FROM Account 출금  처리
         BigDecimal fromAccountNewBalance = fromAccount.getCashBalance().subtract(req.amount());

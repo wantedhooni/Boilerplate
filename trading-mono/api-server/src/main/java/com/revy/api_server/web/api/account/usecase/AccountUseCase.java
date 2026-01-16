@@ -1,12 +1,9 @@
-package com.revy.api_server.web.api.account.service;
+package com.revy.api_server.web.api.account.usecase;
 
 import com.revy.api_server.domain.account.enums.AccountType;
 import com.revy.api_server.web.api.account.payload.CreateAccountPayload;
 import com.revy.api_server.web.api.account.payload.MyAccountsPayload;
 import com.revy.api_server.web.api.account.payload.TransferPayload;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 
 import java.math.BigDecimal;
 import java.util.List;

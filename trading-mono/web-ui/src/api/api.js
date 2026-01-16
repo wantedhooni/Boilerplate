@@ -81,3 +81,40 @@ export async function getSnapshot(symbol) {
   const res = await api.get(`/api/market/snapshot/${encodeURIComponent(symbol)}`)
   return res.data
 }
+
+export async function getMyAccounts(filters = {}) {
+  const params = new URLSearchParams()
+  if (filters.currencies?.length) {
+    filters.currencies.forEach(currency => params.append('currencies', currency))
+  }
+  if (filters.types?.length) {
+    filters.types.forEach(type => params.append('types', type))
+  }
+  if (filters.statuses?.length) {
+    filters.statuses.forEach(status => params.append('statuses', status))
+  }
+  const res = await api.get('/api/account/myAccounts', {
+    params,
+  })
+  return res.data
+}
+
+export async function createAccount(payload) {
+  const res = await api.post('/api/account/create', payload)
+  return res.data
+}
+
+export async function depositAccount(payload) {
+  const res = await api.post('/api/account/deposit', payload)
+  return res.data
+}
+
+export async function withdrawAccount(payload) {
+  const res = await api.post('/api/account/withdraw', payload)
+  return res.data
+}
+
+export async function transferAccount(payload) {
+  const res = await api.post('/api/account/transfer', payload)
+  return res.data
+}

@@ -5,6 +5,8 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.revy.api_server.domain.account.Account;
 import com.revy.api_server.domain.account.QAccount;
 import com.revy.api_server.domain.account.repo.query_repo.AccountQueryRepo;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +19,8 @@ public class AccountQueryRepoImpl implements AccountQueryRepo {
 
     private final JPAQueryFactory jpaQueryFactory;
 
+    @PersistenceContext
+    private final EntityManager em;
     @Override
     @Transactional(readOnly = true)
     public Optional<Account> findOneByAccountNo(String accountNo){
@@ -31,7 +35,12 @@ public class AccountQueryRepoImpl implements AccountQueryRepo {
         return Optional.ofNullable(query.fetchFirst());
     }
 
-
+    @Transactional
+    @Override
+    public long nextAccountNoSeq() {
+        Number n = (Number) em.createNativeQuery("SELECT NEXT VALUE FOR account_no_seq").getSingleResult();
+        return n.longValue();
+    }
 
     private JPAQuery<Account> findQuery(Long ownerId, String accountNo) {
         var query = jpaQueryFactory.selectFrom(QAccount.account);
@@ -46,9 +55,4 @@ public class AccountQueryRepoImpl implements AccountQueryRepo {
         query.orderBy(QAccount.account.accountNo.asc());
         return query;
     }
-
-
-
-
-
 }

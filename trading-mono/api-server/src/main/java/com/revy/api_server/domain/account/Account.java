@@ -14,7 +14,6 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.math.BigDecimal;
-import java.util.UUID;
 
 @Entity
 @Table(name = "account")
@@ -47,13 +46,13 @@ public class Account extends BaseEntity<Long> {
     @Column(name = "available_cash", nullable = false, precision = 19, scale = 4)
     private BigDecimal availableCash; // 주문가능 현금 - 주문 예약금(hold) 차감 후 즉시 사용 가능한 금액
 
-    public static Account createNewAccount(Long userId, AccountType type, String currency) {
+    public static Account createNewAccount(Long userId, String accountNo, AccountType type, String currency) {
         Account account = new Account();
-        account.type = type;
-        account.status = AccountStatus.ACTIVE;
-        account.accountNo = UUID.randomUUID().toString();
         account.ownerId = userId;
+        account.accountNo = accountNo;
+        account.type = type;
         account.currency = currency;
+        account.status = AccountStatus.ACTIVE;
         account.cashBalance = BigDecimal.ZERO;
         account.availableCash = BigDecimal.ZERO;
         return account;

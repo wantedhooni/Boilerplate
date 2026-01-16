@@ -1,4 +1,4 @@
-package com.revy.api_server.web.api.account.service.impl;
+package com.revy.api_server.web.api.account.usecase.impl;
 
 import com.querydsl.core.types.EntityPath;
 import com.querydsl.core.types.Expression;
@@ -47,7 +47,7 @@ class AccountUseCaseImplTest {
     @Test
     @DisplayName("계좌 생성 시 저장되고 응답이 반환된다")
     void create_savesAccountAndReturnsResponse() {
-        Account saved = Account.createNewAccount(1L, AccountType.CASH, "USD");
+        Account saved = Account.createNewAccount(1L, "09900010", AccountType.CASH, "USD");
         when(accountRepo.save(any(Account.class))).thenReturn(saved);
 
         CreateAccountPayload.Res res = accountUseCase.create(1L, AccountType.CASH, "USD");
@@ -81,7 +81,7 @@ class AccountUseCaseImplTest {
     @Test
     @DisplayName("입금 시 잔고가 증가된다")
     void deposit_positiveAmount_updatesBalance() {
-        Account account = Account.createNewAccount(1L, AccountType.CASH, "USD");
+        Account account = Account.createNewAccount(1L, "09900010", AccountType.CASH, "USD");
         when(accountRepo.findOneByOwnerIdAndAccountNo(1L, "123")).thenReturn(Optional.of(account));
 
         accountUseCase.deposit(1L, "123", BigDecimal.TEN);

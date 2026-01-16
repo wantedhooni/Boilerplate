@@ -4,7 +4,7 @@ import com.revy.api_server.web.api.account.payload.CreateAccountPayload;
 import com.revy.api_server.web.api.account.payload.DepositAccountPayload;
 import com.revy.api_server.web.api.account.payload.MyAccountsPayload;
 import com.revy.api_server.web.api.account.payload.TransferPayload;
-import com.revy.api_server.web.api.account.service.AccountUseCase;
+import com.revy.api_server.web.api.account.usecase.AccountUseCase;
 import com.revy.api_server.web.infra.security.UserPrincipal;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

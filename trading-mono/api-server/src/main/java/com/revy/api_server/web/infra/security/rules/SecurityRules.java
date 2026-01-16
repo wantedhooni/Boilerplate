@@ -5,6 +5,7 @@ public final class SecurityRules {
     }
 
     public static final String[] PERMIT_ALL_PATTERNS = {
+            "/favicon.ico",
             "/v3/api-docs/**",
             "/swagger-ui/**",
             "/swagger-ui.html",
