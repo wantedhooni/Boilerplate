@@ -25,12 +25,15 @@
 - ACCOUNT 설계는 DBS 참고해서 작성해보자.
 - https://www.dbs.com/dbsdevelopers/discover/index.html
 - - [x] ACCOUNT 도메인 추가
+- - [x] ACCOUNT 입/출금 내역 도메인 추가
 - - [x] ACCOUNT 생성 Service / RestAPI
 - - [x] ACCOUNT 조회 Service / RestAPI
 - - [x] ACCOUNT 입금 Service / RestAPI
 - - [x] ACCOUNT 출금 Service / RestAPI
 - - [x] ACCOUNT 이체 Service / RestAPI
 
+환전을 또 만들까?
+손이 많이 가는데.. ㅠ_ㅠ
 
 
 
