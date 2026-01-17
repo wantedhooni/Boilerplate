@@ -3,9 +3,9 @@ package com.revy.api_server.web.api.auth;
 import com.revy.api_server.web.api.auth.payload.LoginPayload;
 import com.revy.api_server.web.api.auth.payload.SignupPayload;
 import com.revy.api_server.web.api.auth.payload.TokenReissuePayload;
-import com.revy.api_server.web.api.auth.service.AuthService;
-import com.revy.api_server.web.api.auth.service.dto.LoginResult;
-import com.revy.api_server.web.api.auth.service.dto.impl.LoginResultImpl;
+import com.revy.api_server.web.api.auth.usecase.AuthUsecase;
+import com.revy.api_server.web.api.auth.usecase.dto.LoginResult;
+import com.revy.api_server.web.api.auth.usecase.dto.impl.LoginResultImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,7 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class AuthApiTest {
 
     @Mock
-    private AuthService authService;
+    private AuthUsecase authUsecase;
 
     @InjectMocks
     private AuthApi authApi;
@@ -31,7 +31,7 @@ class AuthApiTest {
     @Test
     @DisplayName("회원가입 응답에 사용자 ID가 포함된다")
     void signup_returnsResponse() throws Exception {
-        when(authService.signup(any())).thenReturn(1L);
+        when(authUsecase.signup(any())).thenReturn(1L);
 
         SignupPayload.Req req = new SignupPayload.Req(
                 "a@b.com",
@@ -56,7 +56,7 @@ class AuthApiTest {
                 .accessToken("access")
                 .refreshToken("refresh")
                 .build();
-        when(authService.login(any())).thenReturn(result);
+        when(authUsecase.login(any())).thenReturn(result);
 
         LoginPayload.Req req = new LoginPayload.Req("a@b.com", "pw");
 
@@ -75,7 +75,7 @@ class AuthApiTest {
                 .accessToken("newAccess")
                 .refreshToken("newRefresh")
                 .build();
-        when(authService.reissue("refresh")).thenReturn(result);
+        when(authUsecase.reissue("refresh")).thenReturn(result);
 
         TokenReissuePayload.Req req = new TokenReissuePayload.Req("refresh");
 

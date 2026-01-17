@@ -22,14 +22,16 @@ import java.util.UUID;
 @MappedSuperclass
 @ToString
 @EntityListeners(AuditingEntityListener.class)
-public abstract class BaseUUIDEntity extends BaseTimeField{
+public abstract class BaseUUIDEntity extends BaseTimeField {
     @Id
-    @Column(name="id")
+    @Column(name = "id")
     protected UUID id;
 
     @PrePersist
     void prePersist() {
-        if (id == null) id = UuidCreator.getTimeOrderedEpoch();
+        if (id == null) {
+            id = UuidCreator.getTimeOrderedEpoch();
+        }
     }
 
 

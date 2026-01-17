@@ -3,8 +3,8 @@ package com.revy.api_server.web.api.auth;
 import com.revy.api_server.web.api.auth.payload.LoginPayload;
 import com.revy.api_server.web.api.auth.payload.SignupPayload;
 import com.revy.api_server.web.api.auth.payload.TokenReissuePayload;
-import com.revy.api_server.web.api.auth.service.AuthService;
-import com.revy.api_server.web.api.auth.service.dto.LoginResult;
+import com.revy.api_server.web.api.auth.usecase.AuthUsecase;
+import com.revy.api_server.web.api.auth.usecase.dto.LoginResult;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "인증 API", description = "회원가입/로그인/토큰 재발급")
 public class AuthApi {
 
-    private final AuthService authService;
+    private final AuthUsecase authUsecase;
 
     /**
      * 회원가입을 처리한다.
@@ -36,7 +36,7 @@ public class AuthApi {
     @Operation(summary = "회원가입", description = "이메일 기반 회원가입을 진행한다.")
     @PostMapping("/signup")
     public ResponseEntity<SignupPayload.Res> signup(@Valid @RequestBody SignupPayload.Req req) {
-        Long userId = authService.signup(req);
+        Long userId = authUsecase.signup(req);
         return ResponseEntity.ok(new SignupPayload.Res(userId, "회원가입이 완료되었습니다."));
     }
 
@@ -49,7 +49,7 @@ public class AuthApi {
     @Operation(summary = "로그인", description = "로그인 후 액세스/리프레시 토큰을 발급한다.")
     @PostMapping("/login")
     public ResponseEntity<LoginPayload.Res> login(@Valid @RequestBody LoginPayload.Req req) {
-        LoginResult result = authService.login(req);
+        LoginResult result = authUsecase.login(req);
         return ResponseEntity.ok(LoginPayload.Res.from(result));
     }
 
@@ -62,7 +62,7 @@ public class AuthApi {
     @Operation(summary = "토큰 재발급")
     @PostMapping("/reissue")
     public ResponseEntity<TokenReissuePayload.Res> reissue(@Valid @RequestBody TokenReissuePayload.Req req) {
-        LoginResult result = authService.reissue(req.refreshToken());
+        LoginResult result = authUsecase.reissue(req.refreshToken());
         return ResponseEntity.ok(TokenReissuePayload.Res.from(result));
     }
 }

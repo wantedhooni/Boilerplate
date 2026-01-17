@@ -11,6 +11,7 @@ import com.revy.api_server.domain.account.enums.AccountType;
 import com.revy.api_server.domain.account.repo.AccountRepo;
 import com.revy.api_server.web.api.account.payload.CreateAccountPayload;
 import com.revy.api_server.web.api.account.payload.MyAccountsPayload;
+import com.revy.common.enums.Currency;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,10 +48,10 @@ class AccountUseCaseImplTest {
     @Test
     @DisplayName("계좌 생성 시 저장되고 응답이 반환된다")
     void create_savesAccountAndReturnsResponse() {
-        Account saved = Account.createNewAccount(1L, "09900010", AccountType.CASH, "USD");
+        Account saved = Account.createNewAccount(1L, "09900010", AccountType.CASH, Currency.USD);
         when(accountRepo.save(any(Account.class))).thenReturn(saved);
 
-        CreateAccountPayload.Res res = accountUseCase.create(1L, AccountType.CASH, "USD");
+        CreateAccountPayload.Res res = accountUseCase.create(1L, AccountType.CASH, Currency.USD);
 
         ArgumentCaptor<Account> captor = ArgumentCaptor.forClass(Account.class);
         verify(accountRepo).save(captor.capture());
@@ -81,7 +82,7 @@ class AccountUseCaseImplTest {
     @Test
     @DisplayName("입금 시 잔고가 증가된다")
     void deposit_positiveAmount_updatesBalance() {
-        Account account = Account.createNewAccount(1L, "09900010", AccountType.CASH, "USD");
+        Account account = Account.createNewAccount(1L, "09900010", AccountType.CASH, Currency.USD);
         when(accountRepo.findOneByOwnerIdAndAccountNo(1L, "123")).thenReturn(Optional.of(account));
 
         accountUseCase.deposit(1L, "123", BigDecimal.TEN);

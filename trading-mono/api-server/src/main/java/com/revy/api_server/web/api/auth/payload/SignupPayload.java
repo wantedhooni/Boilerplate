@@ -1,6 +1,6 @@
 package com.revy.api_server.web.api.auth.payload;
 
-import com.revy.api_server.web.api.auth.service.dto.SignupCommand;
+import com.revy.api_server.web.api.auth.usecase.dto.SignupCommand;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

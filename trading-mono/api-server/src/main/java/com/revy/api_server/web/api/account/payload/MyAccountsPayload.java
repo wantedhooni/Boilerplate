@@ -2,6 +2,7 @@ package com.revy.api_server.web.api.account.payload;
 
 import com.revy.api_server.domain.account.enums.AccountStatus;
 import com.revy.api_server.domain.account.enums.AccountType;
+import com.revy.common.enums.Currency;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -13,7 +14,7 @@ public class MyAccountsPayload {
     @Schema(name = "MyAccountsPayload.Req")
     public record Req(
             @RequestParam(required = false)
-            Set<String> currencies,
+            Set<Currency> currencies,
             @RequestParam(required = false)
             Set<AccountType> types,
             @RequestParam(required = false)

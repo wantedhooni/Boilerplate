@@ -1,6 +1,7 @@
 package com.revy.api_server.web.api.account.payload;
 
 import com.revy.api_server.domain.account.enums.AccountType;
+import com.revy.common.enums.Currency;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -14,8 +15,8 @@ public class CreateAccountPayload {
             @NotNull
             AccountType accountType,
 
-            @NotEmpty
-            String currency
+            @NotNull
+            Currency currency
     ) {
     }
 
@@ -23,7 +24,7 @@ public class CreateAccountPayload {
     public record Res(
             AccountType type,
             String accountNo,
-            String currency,
+            Currency currency,
             BigDecimal cashBalance,
             BigDecimal availableCash
     ) {

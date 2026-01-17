@@ -8,7 +8,7 @@ import com.revy.api_server.client.YFinance.dto.HistoricalResponse;
 import com.revy.api_server.client.YFinance.dto.InfoResponse;
 import com.revy.api_server.client.YFinance.dto.QuoteResponse;
 import com.revy.api_server.client.YFinance.dto.SnapshotResponse;
-import com.revy.api_server.web.api.market.service.QuoteService;
+import com.revy.api_server.web.api.market.usecase.QuoteUsecase;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,7 +30,7 @@ import static org.mockito.Mockito.when;
 class MarketApiTest {
 
     @Mock
-    private QuoteService quoteService;
+    private QuoteUsecase quoteUsecase;
 
     @InjectMocks
     private MarketApi marketApi;
@@ -39,7 +39,7 @@ class MarketApiTest {
     @DisplayName("단건 시세 응답을 반환한다")
     void getQuote_returnsQuote() throws Exception {
         QuoteResponse response = new QuoteResponse("AAPL", BigDecimal.ONE, null, null, null, null, null);
-        when(quoteService.getQuote("AAPL")).thenReturn(response);
+        when(quoteUsecase.getQuote("AAPL")).thenReturn(response);
 
         QuoteResponse result = marketApi.getQuote("AAPL");
 
@@ -52,7 +52,7 @@ class MarketApiTest {
         Map<String, BulkQuoteItem> response = Map.of(
                 "AAPL", new BulkQuoteItem("AAPL", BigDecimal.ONE, null, null, null, null, null, null, null)
         );
-        when(quoteService.getQuotesBulk("AAPL")).thenReturn(response);
+        when(quoteUsecase.getQuotesBulk("AAPL")).thenReturn(response);
 
         Map<String, BulkQuoteItem> result = marketApi.getQuotesBulk("AAPL");
 
@@ -72,7 +72,7 @@ class MarketApiTest {
                 100
         );
         HistoricalResponse response = new HistoricalResponse("AAPL", List.of(price));
-        when(quoteService.getHistorical("AAPL", null, null, null)).thenReturn(response);
+        when(quoteUsecase.getHistorical("AAPL", null, null, null)).thenReturn(response);
 
         HistoricalResponse result = marketApi.getHistorical("AAPL", null, null, null);
 
@@ -84,7 +84,7 @@ class MarketApiTest {
     @DisplayName("종목 정보 응답을 반환한다")
     void getInfo_returnsInfo() throws Exception {
         InfoResponse response = new InfoResponse("AAPL", "short", "long", null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, "USD");
-        when(quoteService.getInfo("AAPL")).thenReturn(response);
+        when(quoteUsecase.getInfo("AAPL")).thenReturn(response);
 
         InfoResponse result = marketApi.getInfo("AAPL");
 
@@ -95,7 +95,7 @@ class MarketApiTest {
     @DisplayName("스냅샷 응답을 반환한다")
     void getSnapshot_returnsSnapshot() throws Exception {
         SnapshotResponse response = new SnapshotResponse("AAPL", null, null, BigDecimal.ONE, "USD");
-        when(quoteService.getSnapshot("AAPL")).thenReturn(response);
+        when(quoteUsecase.getSnapshot("AAPL")).thenReturn(response);
 
         SnapshotResponse result = marketApi.getSnapshot("AAPL");
 
@@ -107,7 +107,7 @@ class MarketApiTest {
     void getEarnings_returnsEarnings() throws Exception {
         EarningRow row = new EarningRow(LocalDate.of(2024, 1, 1), BigDecimal.ONE, null, null, null, null);
         EarningsResponse response = new EarningsResponse("AAPL", "quarterly", List.of(row), null, null);
-        when(quoteService.getEarnings("AAPL", null)).thenReturn(response);
+        when(quoteUsecase.getEarnings("AAPL", null)).thenReturn(response);
 
         EarningsResponse result = marketApi.getEarnings("AAPL", null);
 

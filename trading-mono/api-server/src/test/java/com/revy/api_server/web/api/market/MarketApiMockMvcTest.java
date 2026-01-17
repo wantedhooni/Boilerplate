@@ -2,7 +2,7 @@ package com.revy.api_server.web.api.market;
 
 import com.revy.api_server.client.YFinance.dto.BulkQuoteItem;
 import com.revy.api_server.client.YFinance.dto.QuoteResponse;
-import com.revy.api_server.web.api.market.service.QuoteService;
+import com.revy.api_server.web.api.market.usecase.QuoteUsecase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -26,7 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class MarketApiMockMvcTest {
 
     @Mock
-    private QuoteService quoteService;
+    private QuoteUsecase quoteUsecase;
 
     @InjectMocks
     private MarketApi marketApi;
@@ -42,7 +42,7 @@ class MarketApiMockMvcTest {
     @DisplayName("단건 시세 요청 시 심볼을 반환한다")
     void getQuote_returnsSymbol() throws Exception {
         QuoteResponse response = new QuoteResponse("AAPL", BigDecimal.ONE, null, null, null, null, null);
-        when(quoteService.getQuote("AAPL")).thenReturn(response);
+        when(quoteUsecase.getQuote("AAPL")).thenReturn(response);
 
         mockMvc.perform(get("/api/market/quote/AAPL"))
                 .andExpect(status().isOk())
@@ -55,7 +55,7 @@ class MarketApiMockMvcTest {
         Map<String, BulkQuoteItem> response = Map.of(
                 "AAPL", new BulkQuoteItem("AAPL", BigDecimal.ONE, null, null, null, null, null, null, null)
         );
-        when(quoteService.getQuotesBulk("AAPL")).thenReturn(response);
+        when(quoteUsecase.getQuotesBulk("AAPL")).thenReturn(response);
 
         mockMvc.perform(get("/api/market/quote").param("symbols", "AAPL"))
                 .andExpect(status().isOk())

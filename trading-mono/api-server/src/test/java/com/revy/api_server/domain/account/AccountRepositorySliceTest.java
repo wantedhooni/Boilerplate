@@ -4,6 +4,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.revy.api_server.domain.account.enums.AccountType;
 import com.revy.api_server.domain.account.repo.AccountRepo;
 import com.revy.api_server.domain.account.QAccount;
+import com.revy.common.enums.Currency;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import org.junit.jupiter.api.DisplayName;
@@ -42,7 +43,7 @@ class AccountRepositorySliceTest {
     @Test
     @DisplayName("계좌 저장 후 계좌번호로 조회된다")
     void saveAndFindByOwnerAndAccountNo() {
-        Account account = Account.createNewAccount(1L, "09900010", AccountType.CASH, "USD");
+        Account account = Account.createNewAccount(1L, "09900010", AccountType.CASH, Currency.USD);
         Account saved = accountRepo.save(account);
 
         var found = accountRepo.findOneByOwnerIdAndAccountNo(1L, saved.getAccountNo());
@@ -54,7 +55,7 @@ class AccountRepositorySliceTest {
     @Test
     @DisplayName("Querydsl로 소유자 조건 조회가 가능하다")
     void querydslFindByOwner() {
-        Account account = Account.createNewAccount(2L, "09900010", AccountType.CASH, "USD");
+        Account account = Account.createNewAccount(2L, "09900010", AccountType.CASH, Currency.USD);
         accountRepo.save(account);
 
         Account result = jpaQueryFactory.selectFrom(QAccount.account)

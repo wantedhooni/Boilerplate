@@ -18,6 +18,7 @@ import com.revy.api_server.web.api.account.payload.MyAccountsPayload;
 import com.revy.api_server.web.api.account.payload.TransferPayload;
 import com.revy.api_server.web.api.account.usecase.AccountUseCase;
 import com.revy.api_server.web.exception.AccountException;
+import com.revy.common.enums.Currency;
 import com.revy.common.utils.BigDecimalUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,10 +43,10 @@ public class AccountUseCaseImpl implements AccountUseCase {
 
     @Override
     @Transactional
-    public CreateAccountPayload.Res create(Long userId, AccountType accountType, String currency) {
+    public CreateAccountPayload.Res create(Long userId, AccountType accountType, Currency currency) {
         Assert.notNull(userId, "userId is null");
         Assert.notNull(accountType, "accountType is null");
-        Assert.hasText(currency, "currency is empty");
+        Assert.notNull(currency, "currency is null");
         Account newAccount = Account.createNewAccount(userId, accountService.createSecuritiesAccountNumber(PPP), accountType, currency);
         newAccount = accountRepo.save(newAccount);
         return mapper.convertCreateAccountRes(newAccount);

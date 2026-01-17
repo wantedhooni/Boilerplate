@@ -10,6 +10,7 @@ import com.revy.api_server.web.api.account.payload.DepositAccountPayload;
 import com.revy.api_server.web.api.account.payload.MyAccountsPayload;
 import com.revy.api_server.web.api.account.usecase.AccountUseCase;
 import com.revy.api_server.web.infra.security.UserPrincipal;
+import com.revy.common.enums.Currency;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.AfterEach;
@@ -73,13 +74,13 @@ class AccountApiMockMvcTest {
         CreateAccountPayload.Res res = new CreateAccountPayload.Res(
                 AccountType.CASH,
                 "acc",
-                "USD",
+                Currency.USD,
                 BigDecimal.ZERO,
                 BigDecimal.ZERO
         );
         when(accountUseCase.create(any(), any(), any())).thenReturn(res);
 
-        CreateAccountPayload.Req req = new CreateAccountPayload.Req(AccountType.CASH, "USD");
+        CreateAccountPayload.Req req = new CreateAccountPayload.Req(AccountType.CASH, Currency.USD);
 
         mockMvc.perform(post("/api/account/create")
                         .principal(authentication)

@@ -8,6 +8,7 @@ import com.revy.api_server.web.api.account.payload.DepositAccountPayload;
 import com.revy.api_server.web.api.account.payload.MyAccountsPayload;
 import com.revy.api_server.web.api.account.usecase.AccountUseCase;
 import com.revy.api_server.web.infra.security.UserPrincipal;
+import com.revy.common.enums.Currency;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,7 +42,7 @@ class AccountApiTest {
         CreateAccountPayload.Res res = new CreateAccountPayload.Res(
                 AccountType.CASH,
                 "acc",
-                "USD",
+                Currency.USD,
                 BigDecimal.ZERO,
                 BigDecimal.ZERO
         );
@@ -49,7 +50,7 @@ class AccountApiTest {
 
         CreateAccountPayload.Req req = new CreateAccountPayload.Req(
                 AccountType.CASH,
-                "USD"
+                Currency.USD
         );
 
         CreateAccountPayload.Res response = accountApi.createAccount(auth(), req);

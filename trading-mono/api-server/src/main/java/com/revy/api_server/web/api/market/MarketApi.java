@@ -6,7 +6,7 @@ import com.revy.api_server.client.YFinance.dto.HistoricalResponse;
 import com.revy.api_server.client.YFinance.dto.InfoResponse;
 import com.revy.api_server.client.YFinance.dto.QuoteResponse;
 import com.revy.api_server.client.YFinance.dto.SnapshotResponse;
-import com.revy.api_server.web.api.market.service.QuoteService;
+import com.revy.api_server.web.api.market.usecase.QuoteUsecase;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -25,39 +25,39 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class MarketApi {
 
-    private final QuoteService quoteService;
+    private final QuoteUsecase quoteUsecase;
 
     /**
      * 심볼별 시세를 조회한다.
      */
     @GetMapping("/quote/{symbol}")
     public QuoteResponse getQuote(@PathVariable @Valid @NotEmpty String symbol) {
-        return quoteService.getQuote(symbol);
+        return quoteUsecase.getQuote(symbol);
     }
 
     @GetMapping("/quote")
     Map<String, BulkQuoteItem> getQuotesBulk(@RequestParam("symbols") @NotBlank String symbolsCsv) {
-        return quoteService.getQuotesBulk(symbolsCsv);
+        return quoteUsecase.getQuotesBulk(symbolsCsv);
     }
 
     @GetMapping("/historical/{symbol}")
     HistoricalResponse getHistorical(@PathVariable String symbol, LocalDate start, LocalDate end, String interval) {
-        return quoteService.getHistorical(symbol, start, end, interval);
+        return quoteUsecase.getHistorical(symbol, start, end, interval);
     }
 
     @GetMapping("/info/{symbol}")
     InfoResponse getInfo(@PathVariable String symbol) {
-        return quoteService.getInfo(symbol);
+        return quoteUsecase.getInfo(symbol);
     }
 
     @GetMapping("/snapshot/{symbol}")
     SnapshotResponse getSnapshot(@PathVariable String symbol) {
-        return quoteService.getSnapshot(symbol);
+        return quoteUsecase.getSnapshot(symbol);
     }
 
     @GetMapping("/earnings/{symbol}")
     EarningsResponse getEarnings(@PathVariable String symbol, String frequency) {
-        return quoteService.getEarnings(symbol, frequency);
+        return quoteUsecase.getEarnings(symbol, frequency);
     }
 
 }
