@@ -100,8 +100,3 @@ gradle-app.setting
 hs_err_pid*
 replay_pid*
 
-.vscode
-**/.vscode
-
-node_modules
-**/node_modules
