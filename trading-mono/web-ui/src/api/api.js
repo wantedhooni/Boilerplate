@@ -124,8 +124,10 @@ export async function createOrder(payload) {
   return res.data
 }
 
-export async function getOrders(page = 0, size = 20) {
-  const res = await api.post('/api/order', null, { params: { page, size } })
+export async function getOrders(page = 0, size = 10, status) {
+  const params = { page, size }
+  if (status) params.status = status
+  const res = await api.post('/api/order', null, { params })
   return res.data
 }
 

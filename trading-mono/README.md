@@ -49,14 +49,19 @@
 ### local 실행
 ---
 
+API SERVER 실행
 ```
 # yfinanace-server Proxy 서버 실행
 docker compose -f ./docker/yfinanace-server/docker-compose.yml up -d 
 # mariadb / redis 실행
 docker compose -f ./docker-compose.yml up -d
-./gradlew bootRun
+/gradlew api-server:bootRun
 ```
 
+UI 실행
+```
+cd web-ui && npm install && npm run dev
+```
 
 
 
@@ -66,6 +71,11 @@ docker compose -f ./docker-compose.yml up -d
 
 # 작업 진행중 UI 
 ![img.png](img/img.png)
+![img_1.png](img/img_1.png)
+![img_2.png](img/img_2.png)
+![img_3.png](img/img_3.png)
+
+
 
 # 관련 인프라 실행
 ```

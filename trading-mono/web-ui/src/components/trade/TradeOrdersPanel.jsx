@@ -5,19 +5,45 @@ export default function TradeOrdersPanel({
   ordersLoading,
   ordersError,
   ordersMessage,
+  ordersSize,
+  ordersStatus,
+  onChangeSize,
+  onChangeStatus,
   onRefresh,
   onCancel,
 }) {
   const cancelable = new Set(['NEW', 'PARTIALLY_FILLED'])
 
   return (
-    <section className="orders-embed">
+    <section className="orders-embed trade-card">
       <section className="orders-header">
-        <div>
-          <h2>주문 조회</h2>
-          <p>최근 주문 내역을 확인하고 취소할 수 있습니다.</p>
-        </div>
+          <div>
+            <h2>주문 조회</h2>
+            <p>최근 주문 내역을 확인하고 취소할 수 있습니다.</p>
+          </div>
+        </section>
+      <section className="orders-header">
+        
         <div className="orders-actions">
+          <div className="orders-size">
+            <label>행</label>
+            <select value={ordersSize} onChange={e => onChangeSize(Number(e.target.value))}>
+              {[10, 20, 30, 50].map(opt => (
+                <option key={opt} value={opt}>{opt}</option>
+              ))}
+            </select>
+          </div>
+          <div className="orders-size">
+            <label>상태</label>
+            <select value={ordersStatus} onChange={e => onChangeStatus(e.target.value)}>
+              <option value="">전체</option>
+              <option value="NEW">NEW</option>
+              <option value="PARTIALLY_FILLED">PARTIALLY_FILLED</option>
+              <option value="FILLED">FILLED</option>
+              <option value="CANCELED">CANCELED</option>
+              <option value="REJECTED">REJECTED</option>
+            </select>
+          </div>
           <button className="ghost-button" onClick={onRefresh} disabled={ordersLoading}>
             {ordersLoading ? '불러오는 중...' : '새로고침'}
           </button>

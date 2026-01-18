@@ -9,8 +9,19 @@ import TradeOrdersPanel from '../components/trade/TradeOrdersPanel'
 import TradeQuoteCard from '../components/trade/TradeQuoteCard'
 
 export default function Trade() {
+  const getCookie = name => {
+    const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`))
+    return match ? decodeURIComponent(match[1]) : ''
+  }
+
+  const setCookie = (name, value, days = 7) => {
+    const expires = new Date(Date.now() + days * 86400000).toUTCString()
+    document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/`
+  }
+
+  const initialSymbol = getCookie('last_symbol') || 'AAPL'
   const auth = useAuth()
-  const [symbol, setSymbol] = useState('AAPL')
+  const [symbol, setSymbol] = useState(initialSymbol)
   const [snapshot, setSnapshot] = useState(null)
   const [accounts, setAccounts] = useState([])
   const [loading, setLoading] = useState(false)
@@ -28,6 +39,8 @@ export default function Trade() {
   const [ordersLoading, setOrdersLoading] = useState(false)
   const [ordersError, setOrdersError] = useState(null)
   const [ordersMessage, setOrdersMessage] = useState(null)
+  const [ordersSize, setOrdersSize] = useState(10)
+  const [ordersStatus, setOrdersStatus] = useState('')
 
   const currency = snapshot?.currency || snapshot?.info?.currency || ''
   const price = snapshot?.current_price || snapshot?.quote?.current_price || 0
@@ -163,19 +176,23 @@ export default function Trade() {
     fetchSnapshot(symbol)
   }, [])
 
+  useEffect(() => {
+    if (symbol) setCookie('last_symbol', symbol)
+  }, [symbol])
+
   const fetchOrders = useCallback(async () => {
     setOrdersLoading(true)
     setOrdersError(null)
     setOrdersMessage(null)
     try {
-      const res = await getOrders(0, 20)
+      const res = await getOrders(0, ordersSize, ordersStatus || undefined)
       setOrdersData(res)
     } catch (e) {
       setOrdersError(e.response?.data || e.message)
     } finally {
       setOrdersLoading(false)
     }
-  }, [])
+  }, [ordersSize, ordersStatus])
 
   useEffect(() => {
     fetchOrders()
@@ -298,11 +315,14 @@ export default function Trade() {
           onSelectAccount={setSelectedAccountNo}
           formatAmount={formatAmount}
         />
+       
       </section>
 
+
       <section className="trade-lower">
-        <section className="trade-bottom">
-          <TradeOrderbookCard
+        <section className="trade-bottom ">
+          <section>
+            <TradeOrderbookCard
             orderbook={orderbook}
             orderbookUpdatedAt={orderbookUpdatedAt}
             limitPrice={limitPrice}
@@ -311,6 +331,8 @@ export default function Trade() {
             onRefresh={() => buildOrderbook(price, currencyDecimals)}
             canRefresh={!!price}
           />
+          </section>
+          <section>
           <TradeOrderFormCard
             accounts={accounts}
             selectedAccountNo={selectedAccountNo}
@@ -330,17 +352,25 @@ export default function Trade() {
             submitting={submitting}
             canSubmit={!!snapshot}
           />
+          </section>
+          
+          
         </section>
-
         <TradeOrdersPanel
           orders={orders}
           ordersLoading={ordersLoading}
           ordersError={ordersError}
           ordersMessage={ordersMessage}
+          ordersSize={ordersSize}
+          ordersStatus={ordersStatus}
+          onChangeSize={setOrdersSize}
+          onChangeStatus={setOrdersStatus}
           onRefresh={fetchOrders}
           onCancel={handleCancelOrder}
         />
+       
       </section>
+
     </div>
   )
 }
