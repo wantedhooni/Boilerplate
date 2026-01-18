@@ -66,7 +66,7 @@ class AccountApiTest {
                 new MyAccountsPayload.Res(
                         com.revy.api_server.domain.account.enums.AccountType.CASH,
                         "acc",
-                        "USD",
+                        Currency.USD,
                         com.revy.api_server.domain.account.enums.AccountStatus.ACTIVE,
                         BigDecimal.ZERO,
                         BigDecimal.ZERO)

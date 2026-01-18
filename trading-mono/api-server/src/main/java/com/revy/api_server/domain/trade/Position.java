@@ -1,6 +1,5 @@
 package com.revy.api_server.domain.trade;
 
-import com.revy.api_server.domain.account.Account;
 import com.revy.api_server.domain.common.BaseUUIDEntity;
 import com.revy.api_server.domain.trade.enums.PositionStatus;
 import com.revy.common.enums.Currency;
@@ -9,9 +8,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -27,9 +23,8 @@ import java.time.Instant;
 @Table(name = "stock_position", indexes = {})
 public class Position extends BaseUUIDEntity {
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "account_id", nullable = false)
-    private Account account;
+    @Column(name = "account_id", nullable = false)
+    private Long accountId; // 계좌 ID(조회/정산 편의상 중복 저장)
 
     @Column(name = "symbol", nullable = false, length = 20)
     private String symbol;
@@ -51,9 +46,9 @@ public class Position extends BaseUUIDEntity {
     @Column(name = "closed_at")
     private Instant closedAt;
 
-    public static Position open(Account account, String symbol, Currency currency) {
+    public static Position open(Long accountId, String symbol, Currency currency) {
         Position p = new Position();
-        p.account = account;
+        p.accountId = accountId;
         p.symbol = symbol;
         p.quantity = BigDecimal.ZERO;
         p.avgPriceAmount = BigDecimal.ZERO;
@@ -62,7 +57,9 @@ public class Position extends BaseUUIDEntity {
         return p;
     }
 
-    /** 매수 체결 반영: 수량 증가 + 평단(가중평균) 갱신 */
+    /**
+     * 매수 체결 반영: 수량 증가 + 평단(가중평균) 갱신
+     */
     public void applyBuy(BigDecimal buyQty, BigDecimal buyPriceAmount, Currency currency) {
         BigDecimal prevQty = this.quantity;
         BigDecimal newQty = prevQty.add(buyQty);
@@ -74,6 +71,7 @@ public class Position extends BaseUUIDEntity {
 
     /**
      * 매도 체결 반영: 수량 감소
+     *
      * @return 실현손익(= (sell - avg) * qty) (수수료/세금은 서비스에서 반영 권장)
      */
     public BigDecimal applySell(BigDecimal sellQty, BigDecimal sellPriceAmount) {

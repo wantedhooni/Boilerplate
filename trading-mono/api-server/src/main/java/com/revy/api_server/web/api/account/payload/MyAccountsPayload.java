@@ -27,7 +27,7 @@ public class MyAccountsPayload {
     public record Res(
             AccountType type,
             String accountNo,
-            String currency,
+            Currency currency,
             AccountStatus status,
             BigDecimal cashBalance,
             BigDecimal availableCash

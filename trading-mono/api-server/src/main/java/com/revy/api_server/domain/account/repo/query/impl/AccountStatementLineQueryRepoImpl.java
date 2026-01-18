@@ -1,7 +1,7 @@
-package com.revy.api_server.domain.account.repo.query_repo.impl;
+package com.revy.api_server.domain.account.repo.query.impl;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.revy.api_server.domain.account.repo.query_repo.AccountStatementLineQueryRepo;
+import com.revy.api_server.domain.account.repo.query.AccountStatementLineQueryRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 

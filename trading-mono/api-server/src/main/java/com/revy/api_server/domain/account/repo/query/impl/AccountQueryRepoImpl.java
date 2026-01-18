@@ -1,10 +1,10 @@
-package com.revy.api_server.domain.account.repo.query_repo.impl;
+package com.revy.api_server.domain.account.repo.query.impl;
 
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.revy.api_server.domain.account.Account;
 import com.revy.api_server.domain.account.QAccount;
-import com.revy.api_server.domain.account.repo.query_repo.AccountQueryRepo;
+import com.revy.api_server.domain.account.repo.query.AccountQueryRepo;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;

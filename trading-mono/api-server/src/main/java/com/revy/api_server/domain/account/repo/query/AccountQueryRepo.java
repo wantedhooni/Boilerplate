@@ -1,4 +1,4 @@
-package com.revy.api_server.domain.account.repo.query_repo;
+package com.revy.api_server.domain.account.repo.query;
 
 import com.revy.api_server.domain.account.Account;
 import org.springframework.transaction.annotation.Transactional;

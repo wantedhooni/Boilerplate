@@ -18,6 +18,7 @@ import com.revy.api_server.web.api.account.payload.MyAccountsPayload;
 import com.revy.api_server.web.api.account.payload.TransferPayload;
 import com.revy.api_server.web.api.account.usecase.AccountUseCase;
 import com.revy.api_server.web.exception.AccountException;
+import com.revy.api_server.web.helper.AccountHelper;
 import com.revy.common.enums.Currency;
 import com.revy.common.utils.BigDecimalUtil;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +38,7 @@ public class AccountUseCaseImpl implements AccountUseCase {
     private final AccountStatementLineRepo accountStatementLineRepo;
     private final AccountService accountService;
     private final JPAQueryFactory jpaQueryFactory;
+    private final AccountHelper accountHelper;
 
     private final String BBB = "999"; // 서비스/기관 코드(임시)
     private final String PPP = "001"; // 상품/테넌트/채널
@@ -47,7 +49,8 @@ public class AccountUseCaseImpl implements AccountUseCase {
         Assert.notNull(userId, "userId is null");
         Assert.notNull(accountType, "accountType is null");
         Assert.notNull(currency, "currency is null");
-        Account newAccount = Account.createNewAccount(userId, accountService.createSecuritiesAccountNumber(PPP), accountType, currency);
+        Account newAccount = Account.createNewAccount(userId, accountService.createSecuritiesAccountNumber(PPP),
+                                                      accountType, currency);
         newAccount = accountRepo.save(newAccount);
         return mapper.convertCreateAccountRes(newAccount);
     }
@@ -64,12 +67,12 @@ public class AccountUseCaseImpl implements AccountUseCase {
 
         JPAQuery<MyAccountsPayload.Res> query = jpaQueryFactory
                 .select(Projections.constructor(MyAccountsPayload.Res.class,
-                        QAccount.account.type,
-                        QAccount.account.accountNo,
-                        QAccount.account.currency,
-                        QAccount.account.status,
-                        QAccount.account.cashBalance,
-                        QAccount.account.availableCash
+                                                QAccount.account.type,
+                                                QAccount.account.accountNo,
+                                                QAccount.account.currency,
+                                                QAccount.account.status,
+                                                QAccount.account.cashBalance,
+                                                QAccount.account.availableCash
                 )).from(QAccount.account);
         query.where(QAccount.account.ownerId.eq(userId));
 
@@ -101,8 +104,7 @@ public class AccountUseCaseImpl implements AccountUseCase {
         Assert.notNull(amount, "amount is empty");
         Assert.isTrue(!BigDecimalUtil.isZero(amount), "amount must be positive");
 
-        Account account = accountRepo.findOneByOwnerIdAndAccountNo(userId, accountNo)
-                                     .orElseThrow(() -> new IllegalArgumentException("Account not found: " + accountNo));
+        Account account = accountHelper.findOneByOwnerIdAndAccountNo(userId, accountNo);
         BigDecimal newBalance = account.getCashBalance().add(amount);
         AccountStatementLine stmt = AccountStatementLine.create(
                 account,
@@ -113,7 +115,7 @@ public class AccountUseCaseImpl implements AccountUseCase {
                 "DEP-" + System.currentTimeMillis(),
                 "Deposit of " + amount + " to account " + accountNo
         );
-        accountRepo.addBalance(accountNo, amount);
+        accountRepo.addAllBalance(accountNo, amount);
         accountStatementLineRepo.save(stmt);
         //TODO:Revy 현실 / 현업에서는 commit after뒤에 노티가 있겠지?
     }
@@ -126,13 +128,13 @@ public class AccountUseCaseImpl implements AccountUseCase {
         Assert.hasText(accountNo, "accountNo is empty");
         Assert.notNull(amount, "amount is empty");
         Assert.isTrue(!BigDecimalUtil.isZero(amount), "amount must be positive");
-        Account account = accountRepo.findOneByOwnerIdAndAccountNo(userId, accountNo)
-                                     .orElseThrow(() -> new IllegalArgumentException("Account not found: " + accountNo));
+        Account account = accountHelper.findOneByOwnerIdAndAccountNo(userId, accountNo);
         /*
         출금 타입에 따라서 체크 안해야 할수도 있다. 미수금 발생 등등
          */
         Assert.isTrue(BigDecimalUtil.isGreaterThanOrEqualTo(account.getCashBalance()
-                                                                   .subtract(amount), BigDecimal.ZERO), "Insufficient funds for withdrawal");
+                                                                   .subtract(amount), BigDecimal.ZERO),
+                      "Insufficient funds for withdrawal");
 
         // 2. 출금  처리
         BigDecimal newBalance = account.getCashBalance().subtract(amount);
@@ -148,7 +150,7 @@ public class AccountUseCaseImpl implements AccountUseCase {
                 "Withdrawal of " + amount + " from account " + accountNo
         );
 
-        accountRepo.addBalance(accountNo, negateAmount);
+        accountRepo.addAllBalance(accountNo, negateAmount);
         accountStatementLineRepo.save(stmt);
         //TODO:Revy 현실 / 현업에서는 commit after뒤에 노티가 있겠지?
     }
@@ -166,28 +168,27 @@ public class AccountUseCaseImpl implements AccountUseCase {
         Assert.isTrue(!BigDecimalUtil.isZero(req.amount()), "amount must be positive");
 
         // 2. 사용자 계좌 검증 및 잔고 확인
-        Account fromAccount = accountRepo.findOneByOwnerIdAndAccountNo(userId, req.fromAccountNo())
-                                         .orElseThrow(() -> new AccountException("TRANSFER-001", String.format("사용자의 계좌를 찾지 못했습니다. 요청 계좌번호: %s", req.fromAccountNo())));
+        Account fromAccount = accountHelper.findOneByOwnerIdAndAccountNo(userId, req.fromAccountNo());
         if (fromAccount.getStatus() != AccountStatus.ACTIVE) {
-            throw new AccountException("TRANSFER-004", "사용자의 계좌는 이체를 수행하지 못하는 상태입니다.");
+            throw new AccountException(AccountException.AccountErrorCode.ACCOUNT_NOT_ACTIVE);
         }
         Assert.isTrue(BigDecimalUtil.isGreaterThanOrEqualTo(fromAccount.getCashBalance()
-                                                                       .subtract(req.amount()), BigDecimal.ZERO), "Insufficient funds for withdrawal");
+                                                                       .subtract(req.amount()), BigDecimal.ZERO),
+                      "Insufficient funds for withdrawal");
 
 
         // 3. 수취 계좌 검증
         /*
          TODO:Revy 오픈뱅킹이나 은행시스템이용 계좌주 조회해서 유효성 검증 해야함(타은행은 DB에 없으니).
          */
-        Account toAccount = accountRepo.findOneByAccountNo(req.toAccountNo())
-                                       .orElseThrow(() -> new AccountException("TRANSFER-002", String.format("수취 계좌를 찾지 못했습니다. 요청 계좌번호: %s", req.fromAccountNo())));
+        Account toAccount = accountHelper.findOneByAccountNo(req.toAccountNo());
 
         if (toAccount.getStatus() != AccountStatus.ACTIVE) {
-            throw new AccountException("TRANSFER-005", "수취계좌는 이체를 수행하지 못하는 상태입니다.");
+            throw new AccountException(AccountException.AccountErrorCode.TO_ACCOUNT_NOT_ACTIVE);
         }
 
         if (!fromAccount.getCurrency().equals(toAccount.getCurrency())) {
-            throw new AccountException("TRANSFER-003", "입금/출금 계좌의 통화가 일치하지 않습니다.");
+            throw new AccountException(AccountException.AccountErrorCode.ACCOUNT_CURRENCY_MISMATCH);
         }
 
 
@@ -203,7 +204,7 @@ public class AccountUseCaseImpl implements AccountUseCase {
                 req.referenceId(),
                 req.fromDescription()
         );
-        accountRepo.addBalance(req.fromAccountNo(), negateAmount);
+        accountRepo.addAllBalance(req.fromAccountNo(), negateAmount);
         /*
 
         TODO:Revy 금융권 실제면 여기서 끝나고 금융망으로 던져버리고, noti로 끝나야 하는데...
@@ -221,7 +222,7 @@ public class AccountUseCaseImpl implements AccountUseCase {
                 null,
                 req.toDescription()
         );
-        accountRepo.addBalance(req.toAccountNo(), req.amount());
+        accountRepo.addAllBalance(req.toAccountNo(), req.amount());
         accountStatementLineRepo.save(fromStmt);
         accountStatementLineRepo.save(toStmt);
 
@@ -235,7 +236,9 @@ public class AccountUseCaseImpl implements AccountUseCase {
 
     static class mapper {
         public static CreateAccountPayload.Res convertCreateAccountRes(Account newAccount) {
-            return new CreateAccountPayload.Res(newAccount.getType(), newAccount.getAccountNo(), newAccount.getCurrency(), newAccount.getCashBalance(), newAccount.getAvailableCash());
+            return new CreateAccountPayload.Res(newAccount.getType(), newAccount.getAccountNo(),
+                                                newAccount.getCurrency(), newAccount.getCashBalance(),
+                                                newAccount.getAvailableCash());
         }
     }
 }

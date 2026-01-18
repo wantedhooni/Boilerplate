@@ -1,7 +1,7 @@
 package com.revy.api_server.domain.account.repo;
 
 import com.revy.api_server.domain.account.Account;
-import com.revy.api_server.domain.account.repo.query_repo.AccountQueryRepo;
+import com.revy.api_server.domain.account.repo.query.AccountQueryRepo;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -18,5 +18,21 @@ public interface AccountRepo extends JpaRepository<Account, Long>, AccountQueryR
             account.availableCash = account.availableCash + :amount
             WHERE account.accountNo = :accountNo
             """)
-    void addBalance(String accountNo, BigDecimal amount);
+    void addAllBalance(String accountNo, BigDecimal amount);
+
+    @Modifying
+    @Query(
+            value = """
+            UPDATE Account account SET account.availableCash = account.availableCash - :amount 
+            WHERE account.accountNo = :accountNo and account.ownerId = :ownerId
+            """)
+    void subtractAvailableCashBalance(Long ownerId, String accountNo, BigDecimal amount);
+
+    @Modifying
+    @Query(
+            value = """
+            UPDATE Account account SET account.availableCash = account.availableCash + :amount 
+            WHERE account.accountNo = :accountNo and account.ownerId = :ownerId
+            """)
+    void addAvailableCashBalance(Long ownerId, String accountNo, BigDecimal amount);
 }

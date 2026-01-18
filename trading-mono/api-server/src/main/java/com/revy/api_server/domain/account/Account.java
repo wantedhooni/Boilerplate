@@ -4,6 +4,7 @@ import com.revy.api_server.domain.account.enums.AccountStatus;
 import com.revy.api_server.domain.account.enums.AccountType;
 import com.revy.api_server.domain.common.BaseEntity;
 import com.revy.common.enums.Currency;
+import com.revy.common.utils.BigDecimalUtil;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -13,6 +14,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.springframework.util.Assert;
 
 import java.math.BigDecimal;
 
@@ -59,7 +61,5 @@ public class Account extends BaseEntity<Long> {
         account.availableCash = BigDecimal.ZERO;
         return account;
     }
-
-
 
 }

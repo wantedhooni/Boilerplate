@@ -7,6 +7,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -14,6 +15,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Date;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtTokenProviderImpl implements JwtTokenProvider {
@@ -75,6 +77,7 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
             parseClaims(token);
             return true;
         } catch (Exception ex) {
+            log.debug("exception: ", ex);
             return false;
         }
     }
@@ -82,7 +85,7 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
     /**
      * 사용자 식별자와 만료 시간을 기반으로 토큰을 생성한다.
      *
-     * @param userId           사용자 식별자
+     * @param userId        사용자 식별자
      * @param expirationMin 만료 시간(분)
      * @return JWT 문자열
      */
@@ -103,7 +106,9 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
      * @return 클레임
      */
     private Claims parseClaims(String token) {
-        return Jwts.parser().verifyWith(getSigningKey()).build().parseSignedClaims(token).getPayload();
+        return Jwts.parser()
+                   .verifyWith(getSigningKey())
+                   .build().parseSignedClaims(token).getPayload();
     }
 
     /**

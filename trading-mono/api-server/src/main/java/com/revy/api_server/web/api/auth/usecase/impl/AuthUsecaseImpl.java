@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
+import java.time.Instant;
 
 @Slf4j
 @Service
@@ -67,7 +68,7 @@ public class AuthUsecaseImpl implements AuthUsecase {
         }
         String accessToken = jwtTokenProvider.createAccessToken(user);
         String refreshToken = jwtTokenProvider.createRefreshToken(user);
-        tokenStore.saveRefreshToken(user.getId(), refreshToken, Duration.between(java.time.Instant.now(), jwtTokenProvider.getExpiration(refreshToken)));
+        tokenStore.saveRefreshToken(user.getId(), refreshToken, Duration.between(Instant.now(), jwtTokenProvider.getExpiration(refreshToken)));
         return LoginResultImpl.builder().tokenType(TOKEN_TYPE).accessToken(accessToken).refreshToken(refreshToken)
                               .build();
     }

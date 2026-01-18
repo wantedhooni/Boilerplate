@@ -69,7 +69,7 @@ class AccountUseCaseImplTest {
         doReturn(jpaQuery).when(jpaQuery).orderBy(org.mockito.Mockito.<OrderSpecifier<?>>any());
 
         List<MyAccountsPayload.Res> expected = List.of(
-                new MyAccountsPayload.Res(AccountType.CASH, "123", "USD", null, BigDecimal.ZERO, BigDecimal.ZERO)
+                new MyAccountsPayload.Res(AccountType.CASH, "123", Currency.USD, null, BigDecimal.ZERO, BigDecimal.ZERO)
         );
         when(jpaQuery.fetch()).thenReturn(expected);
 
@@ -87,7 +87,7 @@ class AccountUseCaseImplTest {
 
         accountUseCase.deposit(1L, "123", BigDecimal.TEN);
 
-        verify(accountRepo).addBalance("123", BigDecimal.TEN);
+        verify(accountRepo).addAllBalance("123", BigDecimal.TEN);
     }
 
     @Test

@@ -97,7 +97,7 @@ class AccountApiMockMvcTest {
                 new MyAccountsPayload.Res(
                         AccountType.CASH,
                         "acc",
-                        "USD",
+                        Currency.USD,
                         AccountStatus.ACTIVE,
                         BigDecimal.ZERO,
                         BigDecimal.ZERO
