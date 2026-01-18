@@ -32,13 +32,10 @@
 - - [ ] Trade 도메인 추가
 - - [X] Order 생성 Service / RestAPI
 
-
-
-
 ### local 실행
 ---
 
-API SERVER 실행
+## API SERVER 실행
 ```
 # yfinanace-server Proxy 서버 실행
 docker compose -f ./docker/yfinanace-server/docker-compose.yml up -d 
@@ -46,16 +43,36 @@ docker compose -f ./docker/yfinanace-server/docker-compose.yml up -d
 docker compose -f ./docker-compose.yml up -d
 /gradlew api-server:bootRun
 ```
+### API-SERVER
+서버 메인 : http://localhost:8080/
+swagger : http://localhost:8080/swagger-ui.html
+api docs : http://localhost:8080/v3/api-docs
 
-UI 실행
+### docker mariadb
+- prot: 43306
+- url: localhost:43306/trade
+- root password: rootpassword
+- - user: appuser
+- - password: appuser
+
+### redis
+- port: 6379
+- url: localhost:6379
+- requirepass: redis1234
+- redis UI
+- - url: http://localhost:8081
+
+### yfinance-server
+url: http://localhost:18000/
+swagger: http://localhost:18000/swagger-ui.html
+api docs: http://localhost:18000/v3/api-docs
+redoc: http://localhost:18000/redoc
+
+## UI 실행
 ```
 cd web-ui && npm install && npm run dev
 ```
-
-
-
-
-
+UI 주소: http://localhost:5173/
 
 
 # 작업 진행중 UI 
@@ -63,8 +80,6 @@ cd web-ui && npm install && npm run dev
 ![img_1.png](img/img_1.png)
 ![img_2.png](img/img_2.png)
 ![img_3.png](img/img_3.png)
-
-
 
 # 관련 인프라 실행
 ```
@@ -84,4 +99,4 @@ record를 사용하면 결국은 생성자 기반이라서...
 Projection 추가될때 순서때문에 분명히 실수 할 소지가 많을건데...
 그렇다고 field사용하면 너무 너무 느리고,
 class / setter 사용하면 경기를 일으키고
-트랜드가 참 머같다.
+트랜드가 참....
