@@ -118,3 +118,18 @@ export async function transferAccount(payload) {
   const res = await api.post('/api/account/transfer', payload)
   return res.data
 }
+
+export async function createOrder(payload) {
+  const res = await api.post('/api/order/create', payload)
+  return res.data
+}
+
+export async function getOrders(page = 0, size = 20) {
+  const res = await api.post('/api/order', null, { params: { page, size } })
+  return res.data
+}
+
+export async function cancelOrder(orderId) {
+  const res = await api.post(`/api/order/${encodeURIComponent(orderId)}/cancel`)
+  return res.data
+}

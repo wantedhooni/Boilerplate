@@ -6,6 +6,7 @@ import Signup from './pages/Signup'
 import Market from './pages/Market'
 import Account from './pages/Account'
 import Trade from './pages/Trade'
+import Orders from './pages/Orders'
 import { useAuth } from './auth/AuthProvider'
 import ThemeToggle from './components/ThemeToggle'
 
@@ -52,6 +53,7 @@ export default function App() {
           <Route path="/market" element={<Market />} />
           <Route path="/account" element={<Account />} />
           <Route path="/trade" element={<Trade />} />
+          <Route path="/orders" element={<Orders />} />
         </Routes>
       </main>
     </div>
