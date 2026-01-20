@@ -1,5 +1,6 @@
 package com.revy.api_server.web.api.market.usecase.impl;
 
+import com.revy.api_server.application.web.api.market.usecase.impl.QuoteUsecaseImpl;
 import com.revy.api_server.client.YFinance.YFinanceProxyClient;
 import com.revy.api_server.client.YFinance.dto.BulkQuoteItem;
 import com.revy.api_server.client.YFinance.dto.EarningsResponse;

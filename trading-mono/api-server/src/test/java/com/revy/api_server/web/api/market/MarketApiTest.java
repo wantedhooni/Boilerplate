@@ -1,5 +1,6 @@
 package com.revy.api_server.web.api.market;
 
+import com.revy.api_server.application.web.api.market.MarketApi;
 import com.revy.api_server.client.YFinance.dto.BulkQuoteItem;
 import com.revy.api_server.client.YFinance.dto.EarningRow;
 import com.revy.api_server.client.YFinance.dto.EarningsResponse;
@@ -8,7 +9,7 @@ import com.revy.api_server.client.YFinance.dto.HistoricalResponse;
 import com.revy.api_server.client.YFinance.dto.InfoResponse;
 import com.revy.api_server.client.YFinance.dto.QuoteResponse;
 import com.revy.api_server.client.YFinance.dto.SnapshotResponse;
-import com.revy.api_server.web.api.market.usecase.QuoteUsecase;
+import com.revy.api_server.application.web.api.market.usecase.QuoteUsecase;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

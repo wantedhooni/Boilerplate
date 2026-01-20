@@ -1,15 +1,16 @@
 package com.revy.api_server.web.api.account;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.revy.api_server.application.web.api.account.AccountApi;
 import com.revy.api_server.domain.account.enums.AccountStatus;
 import com.revy.api_server.domain.account.enums.AccountType;
 import com.revy.api_server.domain.user.Role;
 import com.revy.api_server.domain.user.User;
-import com.revy.api_server.web.api.account.payload.CreateAccountPayload;
-import com.revy.api_server.web.api.account.payload.DepositAccountPayload;
-import com.revy.api_server.web.api.account.payload.MyAccountsPayload;
-import com.revy.api_server.web.api.account.usecase.AccountUseCase;
-import com.revy.api_server.web.infra.security.UserPrincipal;
+import com.revy.api_server.application.web.api.account.payload.CreateAccountPayload;
+import com.revy.api_server.application.web.api.account.payload.DepositAccountPayload;
+import com.revy.api_server.application.web.api.account.payload.MyAccountsPayload;
+import com.revy.api_server.application.web.api.account.usecase.AccountUseCase;
+import com.revy.api_server.application.infra.security.UserPrincipal;
 import com.revy.common.enums.Currency;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

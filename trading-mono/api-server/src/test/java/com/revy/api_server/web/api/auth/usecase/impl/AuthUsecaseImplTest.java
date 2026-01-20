@@ -1,5 +1,6 @@
 package com.revy.api_server.web.api.auth.usecase.impl;
 
+import com.revy.api_server.application.web.api.auth.usecase.impl.AuthUsecaseImpl;
 import com.revy.api_server.domain.user.Role;
 import com.revy.api_server.domain.user.User;
 import com.revy.api_server.domain.user.UserDetail;
@@ -8,11 +9,11 @@ import com.revy.api_server.domain.user.repo.RoleRepository;
 import com.revy.api_server.domain.user.repo.UserDetailRepository;
 import com.revy.api_server.domain.user.repo.UserQueryRepository;
 import com.revy.api_server.domain.user.repo.UserRepository;
-import com.revy.api_server.web.api.auth.usecase.dto.LoginCommand;
-import com.revy.api_server.web.api.auth.usecase.dto.LoginResult;
-import com.revy.api_server.web.api.auth.usecase.dto.SignupCommand;
-import com.revy.api_server.web.infra.security.provider.JwtTokenProvider;
-import com.revy.api_server.web.infra.security.token.TokenStore;
+import com.revy.api_server.application.web.api.auth.usecase.dto.LoginCommand;
+import com.revy.api_server.application.web.api.auth.usecase.dto.LoginResult;
+import com.revy.api_server.application.web.api.auth.usecase.dto.SignupCommand;
+import com.revy.api_server.application.infra.security.provider.JwtTokenProvider;
+import com.revy.api_server.application.infra.security.token.TokenStore;
 import com.revy.common.error.ApiException;
 import com.revy.common.error.ErrorCode;
 import org.junit.jupiter.api.DisplayName;

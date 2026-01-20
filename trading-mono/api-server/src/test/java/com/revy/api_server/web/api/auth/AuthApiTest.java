@@ -1,11 +1,12 @@
 package com.revy.api_server.web.api.auth;
 
-import com.revy.api_server.web.api.auth.payload.LoginPayload;
-import com.revy.api_server.web.api.auth.payload.SignupPayload;
-import com.revy.api_server.web.api.auth.payload.TokenReissuePayload;
-import com.revy.api_server.web.api.auth.usecase.AuthUsecase;
-import com.revy.api_server.web.api.auth.usecase.dto.LoginResult;
-import com.revy.api_server.web.api.auth.usecase.dto.impl.LoginResultImpl;
+import com.revy.api_server.application.web.api.auth.AuthApi;
+import com.revy.api_server.application.web.api.auth.payload.LoginPayload;
+import com.revy.api_server.application.web.api.auth.payload.SignupPayload;
+import com.revy.api_server.application.web.api.auth.payload.TokenReissuePayload;
+import com.revy.api_server.application.web.api.auth.usecase.AuthUsecase;
+import com.revy.api_server.application.web.api.auth.usecase.dto.LoginResult;
+import com.revy.api_server.application.web.api.auth.usecase.dto.impl.LoginResultImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
