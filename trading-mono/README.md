@@ -31,11 +31,21 @@
 - - [ ] Position 도메인 추가
 - - [ ] Trade 도메인 추가
 - - [X] Order 생성 Service / RestAPI
+- - [ ] OrderFill(체결)을 어떤식으로 처리할지 고민중
+- - - 현업이면 증권가 서버로 넣었다가 queue로 체결 결과 받는거 같은데....
+- - - client가 REST API로 체결 / 체결실패 하는거는 아닌거 같고..
+- - - TEST 용으로는 REST API를 만들어 놓을까? 고민중
+- - - 체결이 되어야 POSITION / TRADE가 생성되니깐..
+- - - ORDER 넣으면 eventPulisher로 체결 요청 날리고 비동기로 랜덤 처리를 할까?
 
-### local 실행
+- - [ ] Position 조회 Service / RestAPI
+- - [ ] Trade 조회 Service / RestAPI
+
+# local 실행
 ---
 
 ## API SERVER 실행
+---
 ```
 # yfinanace-server Proxy 서버 실행
 docker compose -f ./docker/yfinanace-server/docker-compose.yml up -d 
@@ -44,11 +54,13 @@ docker compose -f ./docker-compose.yml up -d
 /gradlew api-server:bootRun
 ```
 ### API-SERVER
-서버 메인 : http://localhost:8080/
-swagger : http://localhost:8080/swagger-ui.html
-api docs : http://localhost:8080/v3/api-docs
+---
+- 서버 메인 : http://localhost:8080/
+- swagger : http://localhost:8080/swagger-ui.html
+- api docs : http://localhost:8080/v3/api-docs
 
 ### docker mariadb
+---
 - prot: 43306
 - url: localhost:43306/trade
 - root password: rootpassword
@@ -63,23 +75,23 @@ api docs : http://localhost:8080/v3/api-docs
 - - url: http://localhost:8081
 
 ### yfinance-server
-url: http://localhost:18000/
-swagger: http://localhost:18000/swagger-ui.html
-api docs: http://localhost:18000/v3/api-docs
-redoc: http://localhost:18000/redoc
+- url: http://localhost:18000/
+- swagger: http://localhost:18000/swagger-ui.html
+- api docs: http://localhost:18000/v3/api-docs
+- redoc: http://localhost:18000/redoc
 
 ## UI 실행
 ```
 cd web-ui && npm install && npm run dev
 ```
-UI 주소: http://localhost:5173/
+- UI 주소: http://localhost:5173/
 
 
 # 작업 진행중 UI 
-![img.png](img/img.png)
-![img_1.png](img/img_1.png)
-![img_2.png](img/img_2.png)
-![img_3.png](img/img_3.png)
+- ![img.png](img/img.png)
+- ![img_1.png](img/img_1.png)
+- ![img_2.png](img/img_2.png)
+- ![img_3.png](img/img_3.png)
 
 # 관련 인프라 실행
 ```
