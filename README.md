@@ -14,3 +14,8 @@ Spring Cloud Gateway 기반 MSA 기본 뼈대 구축
 - api-gateway
 - auth-service
 - user-service
+
+# trading-mono 
+---
+우선 모놀리식으로 증권사 서버를 만들어보았다. (진행중)
+[README.md](trading-mono/README.md)

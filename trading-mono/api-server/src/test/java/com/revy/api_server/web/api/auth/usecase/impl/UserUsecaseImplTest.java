@@ -1,10 +1,11 @@
 package com.revy.api_server.web.api.auth.usecase.impl;
 
+import com.revy.api_server.application.web.api.auth.usecase.impl.UserUsecaseImpl;
 import com.revy.api_server.domain.user.User;
 import com.revy.api_server.domain.user.UserDetail;
 import com.revy.api_server.domain.user.UserStatus;
 import com.revy.api_server.domain.user.repo.UserRepository;
-import com.revy.api_server.web.api.auth.usecase.dto.UserInfoResult;
+import com.revy.api_server.application.web.api.auth.usecase.dto.UserInfoResult;
 import com.revy.common.error.ApiException;
 import com.revy.common.error.ErrorCode;
 import org.junit.jupiter.api.DisplayName;
